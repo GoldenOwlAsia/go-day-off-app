@@ -199,6 +199,7 @@ class EditAccountInfo extends React.Component {
   render() {
     const { classes, handleShowNotif } = this.props;
     const { user, editMode, allTeams, allPositions, demandUserId, usedDayOff, dayOffSetting } = this.state;
+    const remainingDayOff = dayOffSetting - usedDayOff;
 
     const { userId, userType } = getUserEntity();
     const isCurrentLoggedInUser = (userId === demandUserId);
@@ -650,11 +651,11 @@ class EditAccountInfo extends React.Component {
                         }`}</span>
                       </div>
                     </Grid>
-                    {/* Used day-off */}
+                    {/* Remaining day-off */}
                     <Grid item xs={12} sm={6}>
                     <div className={classes.fieldTitle}>
-                      Used day-off:
-                      <span className={classes.fieldValue}>{` ${usedDayOff }/${dayOffSetting} (this year)`}</span>
+                      Remaining day-off:
+                      <span className={classes.fieldValue}>{` ${remainingDayOff}/${dayOffSetting} (this year)`}</span>
                     </div>
                   </Grid>
                   </Grid>
