@@ -114,19 +114,3 @@ class Calendar extends React.Component {
 }
 
 export default withRouter(connect(null, mapDispatchToProps)(Calendar));
-
-
-/**
- * @todo `query database`
- * 1. Query all letter of parsed `userId` has fFromDT || fToDT in current month with specified status value
- * 2.
- * 2.1 Remember to compare the year
- * 2.2 For case `fFromDT`:
- * if `fToDT`.month is not same to the queried month
- *  + set `fToDT`.month to queried month
- *  + set `fToDT`.date to the last Date of queried month
- * 2.3 For case `fToDT` :
- *  if (`fFromDT`.month is not same to the queried month)
- *  + set `fFromDT`.date to the first Date of queried month
- *  + set `fToDT`.month to queried month
- */
