@@ -64,7 +64,8 @@ const PersonnelListItems = props => {
         </ListItem>
       </Link>
       <br />
-      <Divider />
+      {/*Comment for now*/}
+      {/* <Divider />
       <br />
       <Link to="/booking-meeting" className={classes.undecoratedLink}>
         <ListItem
@@ -88,7 +89,7 @@ const PersonnelListItems = props => {
           <ListItemText primary="Create Booking" />
         </ListItem>
       </Link>
-      <br />
+      <br /> */} 
     </React.Fragment>
   );
 };
