@@ -124,11 +124,11 @@ export const getUsedDayOff = (cancelToken = undefined, userId, toMonth, inYear) 
 } 
 
 export const getDemandLetterByFilter = (cancelToken = undefined, filterOptions) => {
-  const {userId, fromMonth, fromYear, toMonth, toYear, status, page = 1, size = 10} = filterOptions;
+  const {userId, fromDay ,fromMonth, fromYear, toDay, toMonth, toYear, status = 0, page = 1, size = 10} = filterOptions;
   
   const url = `${SERVER_HOST_DEV}/leaveletter/filter?userId=${userId}`
-            + (fromMonth && fromYear && !isNaN(fromMonth) && !isNaN(fromYear) ? `&fromMonth=${fromMonth}&fromYear=${fromYear}` : '')
-            + (toMonth && toYear && !isNaN(toMonth) && !isNaN(toYear) ? `&toMonth=${toMonth}&toYear=${toYear}` : '')
+            + (fromMonth && fromYear && !isNaN(fromMonth) && !isNaN(fromYear) ? `&fromDay=${fromDay}&fromMonth=${fromMonth}&fromYear=${fromYear}` : '')
+            + (toMonth && toYear && !isNaN(toMonth) && !isNaN(toYear) ? `&toDay=${toDay}&toMonth=${toMonth}&toYear=${toYear}` : '')
             + (page ? `&page=${page}` : '')
             + (size ? `&size=${size}` : '')
             + (status ? `&status=${status}` : '');

@@ -181,8 +181,6 @@ Router.post('/', bodyMustNotEmpty, async (req, res) => {
     const entity = standardizeObj({ ...req.body, id });
     const { fStatus, fFromDT, fToDT } = entity;
 
-    console.log(req.body, entity);
-
     // validate status value
     if (
       (fStatus || 3) &&
@@ -337,7 +335,9 @@ Router.get('/filter', async (req, res) => {
   try {
     // validating query params
     const currentYear = moment().get('year');
-    let { userId, fromMonth = '01', toMonth = '12',
+    let { userId,
+      fromDay = '01', toDay = '31',
+      fromMonth = '01', toMonth = '12',
       fromYear = currentYear, toYear = currentYear, status = 0,
       page = DEFAULT_PAGE_ORDER, size = DEFAULT_PAGE_SIZE } = req.query;
 
@@ -356,7 +356,7 @@ Router.get('/filter', async (req, res) => {
     const { rawLeaveLetters: leaveLetters, count } = await leaveLetterModel.countAll([],
       { where: { 
           fUserId: userId,
-          fRdt: { [Op.between]: [fromDate, toDate] },
+          [Op.and]: [{ fFromDT: {[Op.lte]: toDate} }, { fToDT: { [Op.gte]: fromDate } }],
           fStatus: +status === 0 ? { [Op.ne]: null } : +status,
           fApprover: (userId === getIdFromToken(req.token_payload)) ? { [Op.ne]: null } : getIdFromToken(req.token_payload),
       }},
