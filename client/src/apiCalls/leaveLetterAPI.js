@@ -141,7 +141,7 @@ export const getDemandLetterByFilter = (cancelToken = undefined, filterOptions) 
 }
 
 export const getAllLetterByFilter = (cancelToken = undefined, filterOptions) => {
-  const {fromDay ,fromMonth, fromYear, toDay, toMonth, toYear, status, page = 1, size = 10} = filterOptions;
+  const {fromDay ,fromMonth, fromYear, toDay, toMonth, toYear, status = 0, page = 1, size = 10} = filterOptions;
 
   const url = `${SERVER_HOST_DEV}/leaveletter?`
           + (fromMonth && fromYear && !isNaN(fromMonth) && !isNaN(fromYear) ? `&fromDay=${fromDay}&fromMonth=${fromMonth}&fromYear=${fromYear}` : '')

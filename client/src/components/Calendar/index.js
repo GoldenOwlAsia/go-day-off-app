@@ -1,22 +1,22 @@
 import React from 'react';
 import moment from 'moment';
 import { withRouter } from 'react-router-dom';
-import {connect} from 'react-redux';
-import shortid from 'shortid';
+import { connect } from 'react-redux';
 import { CancelToken } from 'axios';
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import $ from 'jquery';
 
+import './fullCalendar.scss'
 import './Calendar.css';
 
-// constants
-import { getCalendarApprovedDayOff } from '../../apiCalls/leaveLetterAPI';
-import { LEAVE_REQUEST_APPROVED } from '../../constants/requestStatusType';
+// api
+import { getAllLetterByFilter } from '../../apiCalls/leaveLetterAPI'
 
 // Notification redux
 import {
   showNotification,
 } from '../../redux/actions/notificationActions';
-import { NOTIF_ERROR, NOTIF_SUCCESS, NOTIF_WARNING } from '../../constants/notification';
-import { compareDatesWithoutTime } from '../../utilities';
 
 const mapDispatchToProps = (dispatch) => {
   return {
@@ -24,250 +24,109 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-const calculateEndDayOfLetterInMonth = (currentMonth, toDT) => {
-  let toDateMoment = moment(toDT);
-  if (toDateMoment.get('month') > currentMonth.get('month')) 
-    return currentMonth.daysInMonth()
-  return toDateMoment.get('date'); 
-}
-
-const calculateStartDayOfLetterInMonth = (currentMonth, fromDT) => {
-  let fromDateMoment = moment(fromDT);
-  if (fromDateMoment.get('month') < currentMonth.get('month')) 
-    return 1;
-  return fromDateMoment.get('date'); 
-}
+const letterStatus = ['Pending', 'Approved', 'Cancelled'];
 
 class Calendar extends React.Component {
   state = {
-    currentDate: new moment(),
-    currentMonth: new moment(),
-    selectedDate: '',
-    dayoffs: {}, //dictionary
+    selectedDate: moment(),
+    events: [],
   };
 
-  loadLetters = () => {
-    const { currentMonth } = this.state;
-    
-    const filterData = {
-      month: this.state.currentMonth.month()+1,
-      year: this.state.currentMonth.year(), 
-      status: LEAVE_REQUEST_APPROVED
-    }
-    getCalendarApprovedDayOff(this.cancelSource.token, filterData)
-      .then(response => {
-        const { data: { success, leaveLetters } } = response;
-        if (success) {
-          let dayoffs = {};
-          for (let x = 0; x < leaveLetters.length; x++) {
-            const firstDay = calculateStartDayOfLetterInMonth(currentMonth, leaveLetters[x].fFromDT);
-            const lastDay = calculateEndDayOfLetterInMonth(currentMonth, leaveLetters[x].fToDT);
-            for (let i = firstDay; i <= lastDay; i++) {
-              dayoffs[i] = leaveLetters[x].fId;
-            }
-          }
-          this.__isMounted__ && this.setState (
-            { dayoffs }, 
-            () => this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_SUCCESS, 'Load calendar success!')
-          );
-        } else {
-          this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_WARNING, 'Something went wrong! Refresh the page!')
-        }
-      })
-      .catch(err => {
-        this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `${err.message}`);
-      })
+  componentWillMount = async () => {
+    this.cancelSource = CancelToken.source();
+
+    this.setEvents();
   }
 
   componentDidMount = () => {
     this.__isMounted__ = true;
-    this.cancelSource = CancelToken.source()
-    this.loadLetters();
+
+    $(document).ready(() => {
+      $(".fc-next-button").click(() => {
+        this.setState({ selectedDate: this.state.selectedDate.add(1, 'month') });
+
+        this.setEvents();
+      })
+
+      $(".fc-prev-button").click(() => {
+        this.setState({ selectedDate: this.state.selectedDate.subtract(1, 'month')  });
+
+        this.setEvents();
+      })
+    })
   }
-  
+
   componentWillUnmount = () => {
     this.__isMounted__ = false;
     this.cancelSource.cancel();
   }
 
-  renderHeader() {
-    const dateFormat = 'MMMM YYYY';
-    return (
-      <div className='header row flex-middle'>
-        <div className='col col-start'>
-          <div className='icon' onClick={this.prevMonth}>
-            chevron_left
-          </div>
-        </div>
-        <div className='col col-center'>
-          <span>
-            {this.state.currentMonth.format(dateFormat)}
-          </span>
-        </div>
-        <div className='col col-end' onClick={this.nextMonth}>
-          <div className='icon'>chevron_right</div>
-        </div>
-      </div>
-    );
-  };
-  renderDays() {
-    const dateFormat = 'dddd';
-    const days = [];
-    let startDate = this.state.currentMonth.startOf('week').clone();
+  onEventClick = (info) => {
+    const { history } = this.props;
+    history.push(`/leave-request/${info.event.id}`);
+  }
 
-    startDate.subtract(1, 'days');
-    for (let i = 0; i < 7; i++) {
-      days.push(
-        <div className='col col-center' key={shortid.generate()}>
-          {startDate.add(1, 'days').format(dateFormat)}
-        </div>
-      );
+  setEvents = async () => {
+    const { selectedDate } = this.state;
+    const selectedMonth = selectedDate.month() + 1;
+    const selectedYear = selectedDate.year();
+
+    const filterData = {
+      fromDay: 1,
+      fromMonth: selectedMonth,
+      fromYear: selectedYear,
+      toDay: selectedDate.endOf('months'),
+      toMonth: selectedMonth,
+      toYear: selectedYear,
     }
 
-    return <div className='days row'>{days}</div>
-  };
+    const res = await getAllLetterByFilter(this.cancelSource.token, filterData);
+    const letters = res.data.leaveLetters;
 
-  renderCells() {
-    const { currentDate, currentMonth, selectedDate } = this.state;
-
-    const monthStart = currentMonth.clone().startOf('month');
-
-    const monthEnd = monthStart.clone().endOf('month');
-
-    const startDate = monthStart.clone().startOf('month').startOf('week');
-
-    const endDate = monthEnd.clone().endOf('week');
-    //
-    const dateFormat = 'D';
-    const rows = [];
-    let days = [];
-    let day = startDate.clone();
-    let formattedDate = '';
-
-    //Parse Leave letter info to display on the calendar
-    /**
-     * + show difference color for accepted off-days in current selected month 
-     * + on Hover: Show actions: 
-     * + + show button detail for day-off
-     * + + show button create-leave-letter
-     */
-
-    while (day <= endDate) {
-      for (let i = 0; i < 7; i++) {
-        formattedDate = day.format(dateFormat);
-        const cloneDate = day.clone(); //Must have this line of code
-        const isDisabledDay = day.month() !== currentMonth.month();
-        const dayoffId = this.state.dayoffs[cloneDate.get('date')];
-        let styleClassName = isDisabledDay
-          ? 'disabled' 
-          : (
-            selectedDate !== '' && selectedDate.date() === day.date() 
-            ? 'selected' 
-            : ( 
-              compareDatesWithoutTime(day, currentDate) === 0
-              ? 'currentDate' 
-              : 'normal'
-            )
-          );
-        
-        styleClassName += !isDisabledDay && dayoffId !== undefined ? ' offday' : '';
-        days.push(
-          <div className={`col cell ${styleClassName}`}
-            key={shortid.generate()}
-            onClick={() => this.onDateClick(cloneDate)}
-          >
-            <span className='number'>{formattedDate}</span>
-            <span className='bg'>{formattedDate}</span>
-            { !isDisabledDay
-              ? (dayoffId !== undefined ? 
-                 <button 
-                    className='btn btn-detail' 
-                    onClick={() => this.onButtonDetailClick(dayoffId)}
-                  >
-                    Show details
-                  </button> 
-                :
-                  <button 
-                    className='btn btn-create' 
-                    onClick={() => this.onButtonCreateClick()}
-                  >
-                    Create new request
-                  </button> 
-              )
-              : null
-            }
-          </div>
-        );
-        day = day.add(1, 'days');
+    const events = letters.map(letter => {
+      return {
+        id: letter.fId,
+        title: `${letter.fUserFullName} - ${letterStatus[letter.fStatus - 1]}`,
+        start: letter.fFromDT.toString().substring(0, 10),
+        end: moment(letter.fToDT.toString()).add(1, 'day').toISOString().substring(0, 10),
       }
-      rows.push (
-        <div className='row' key={shortid.generate()}>
-          {days}
-        </div>
-      );
-      days = [];
-    }
-    return <div className='body'>{rows}</div>;
-  };
-
-  onDateClick = date => {
-    this.__isMounted__ && this.setState({
-      selectedDate: date
     })
-    //if day is an approved-dayoff -> show button
-  };
 
-  onButtonDetailClick = dayoffId => {
-    const { history } = this.props;
-    history.push(`/leave-request/${dayoffId}`);
+    this.setState({ events });
   }
-
-  onButtonCreateClick = () => {
-    const { history } = this.props;
-    history.push(`leave-request/create`);
-  }
-
-  nextMonth = () => {
-    this.__isMounted__ && this.setState( {
-      currentMonth: this.state.currentMonth.add(1, 'months'),
-      selectedDate: '',
-      dayoffs: {},
-    }, () => this.loadLetters());
-
-  };
-  prevMonth = () => {
-    this.__isMounted__ && this.setState({
-      currentMonth: this.state.currentMonth.subtract(1, 'months'),
-      selectedDate: '',
-      dayoffs: {},
-    }, () => this.loadLetters());
-  };
 
   render() {
     return (
-    <div className='calendar'>
-      {this.renderHeader()}
-      {this.renderDays()}
-      {this.renderCells()}
-    </div>
-  );
+      <div style={{ borderTop: '4px solid #fac863', borderBottom: '4px solid #fac863', paddingTop: '20px' }}>
+        <FullCalendar 
+          themeSystem='lux' 
+          defaultView="dayGridMonth" 
+          plugins={[dayGridPlugin]} 
+          events={this.state.events}
+          eventColor={'#fac863'}
+          eventTextColor={'black'}
+          eventClick={this.onEventClick}
+          datesRender={this.viewRender}
+        />
+      </div>
+    );
   }
 }
 
 export default withRouter(connect(null, mapDispatchToProps)(Calendar));
 
 
-    /**
-     * @todo `query database`
-     * 1. Query all letter of parsed `userId` has fFromDT || fToDT in current month with specified status value
-     * 2. 
-     * 2.1 Remember to compare the year
-     * 2.2 For case `fFromDT`:
-     * if `fToDT`.month is not same to the queried month
-     *  + set `fToDT`.month to queried month
-     *  + set `fToDT`.date to the last Date of queried month
-     * 2.3 For case `fToDT` :
-     *  if (`fFromDT`.month is not same to the queried month)
-     *  + set `fFromDT`.date to the first Date of queried month
-     *  + set `fToDT`.month to queried month
-     */
+/**
+ * @todo `query database`
+ * 1. Query all letter of parsed `userId` has fFromDT || fToDT in current month with specified status value
+ * 2.
+ * 2.1 Remember to compare the year
+ * 2.2 For case `fFromDT`:
+ * if `fToDT`.month is not same to the queried month
+ *  + set `fToDT`.month to queried month
+ *  + set `fToDT`.date to the last Date of queried month
+ * 2.3 For case `fToDT` :
+ *  if (`fFromDT`.month is not same to the queried month)
+ *  + set `fFromDT`.date to the first Date of queried month
+ *  + set `fToDT`.month to queried month
+ */
