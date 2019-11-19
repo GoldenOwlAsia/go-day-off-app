@@ -75,7 +75,7 @@ class Calendar extends React.Component {
       fromDay: 1,
       fromMonth: selectedMonth,
       fromYear: selectedYear,
-      toDay: selectedDate.endOf('months'),
+      toDay: selectedDate.endOf('months').date(),
       toMonth: selectedMonth,
       toYear: selectedYear,
       size: 0,
