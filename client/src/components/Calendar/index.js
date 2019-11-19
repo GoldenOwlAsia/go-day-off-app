@@ -10,8 +10,15 @@ import $ from 'jquery';
 import './fullCalendar.scss'
 import './Calendar.css';
 
+// constant
+import { userTypes } from '../../constants/permission'
+
 // api
-import { getAllLetterByFilter } from '../../apiCalls/leaveLetterAPI'
+import { getAllLetterByFilter, getDemandLetterByFilter } from '../../apiCalls/leaveLetterAPI'
+
+// helpers
+import { getUserId } from '../../helpers/authHelpers'
+import { getUserTypeFromCookie } from '../../helpers/getUserInfo'
 
 // Notification redux
 import {
@@ -31,6 +38,8 @@ class Calendar extends React.Component {
     selectedDate: moment(),
     events: [],
   };
+
+  isAdmin = getUserTypeFromCookie() === userTypes.MODE_HR;
 
   componentWillMount = async () => {
     this.cancelSource = CancelToken.source();
@@ -67,11 +76,21 @@ class Calendar extends React.Component {
   }
 
   setEvents = async () => {
+    const { isAdmin, cancelSource } = this;
     const { selectedDate } = this.state;
     const selectedMonth = selectedDate.month() + 1;
     const selectedYear = selectedDate.year();
-
-    const filterData = {
+    const filterData = isAdmin ? {
+      fromDay: 1,
+      fromMonth: selectedMonth,
+      fromYear: selectedYear,
+      toDay: selectedDate.endOf('months').date(),
+      toMonth: selectedMonth,
+      toYear: selectedYear,
+      size: 0,
+    } 
+    : {
+      userId: getUserId(),
       fromDay: 1,
       fromMonth: selectedMonth,
       fromYear: selectedYear,
@@ -81,13 +100,13 @@ class Calendar extends React.Component {
       size: 0,
     }
 
-    const res = await getAllLetterByFilter(this.cancelSource.token, filterData);
+    const res = isAdmin ? await getAllLetterByFilter(cancelSource.token, filterData) : await getDemandLetterByFilter(cancelSource.token, filterData);
     const letters = res.data.leaveLetters;
 
     const events = letters.map(letter => {
       return {
         id: letter.fId,
-        title: `${letter.fUserFullName} - ${letterStatus[letter.fStatus - 1]}`,
+        title: `${isAdmin ? `${letter.fUserFullName} - ` : ''}${letterStatus[letter.fStatus - 1]}`,
         start: letter.fFromDT.toString().substring(0, 10),
         end: moment(letter.fToDT.toString()).add(1, 'day').toISOString().substring(0, 10),
       }
