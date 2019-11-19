@@ -80,16 +80,7 @@ class Calendar extends React.Component {
     const { selectedDate } = this.state;
     const selectedMonth = selectedDate.month() + 1;
     const selectedYear = selectedDate.year();
-    const filterData = isAdmin ? {
-      fromDay: 1,
-      fromMonth: selectedMonth,
-      fromYear: selectedYear,
-      toDay: selectedDate.endOf('months').date(),
-      toMonth: selectedMonth,
-      toYear: selectedYear,
-      size: 0,
-    } 
-    : {
+    const filterData = {
       userId: getUserId(),
       fromDay: 1,
       fromMonth: selectedMonth,
@@ -100,16 +91,16 @@ class Calendar extends React.Component {
       size: 0,
     }
 
-    const res = isAdmin ? await getAllLetterByFilter(cancelSource.token, filterData) : await getDemandLetterByFilter(cancelSource.token, filterData);
+    const res = await getDemandLetterByFilter(cancelSource.token, filterData);
     const letters = res.data.leaveLetters;
 
     const events = letters.map(letter => {
-      let backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
-      let textColor = 'white'
+      const backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      const textColor = 'white'
 
       return {
         id: letter.fId,
-        title: `${isAdmin ? `${letter.fUserFullName} - ` : ''}${letterStatus[letter.fStatus - 1]}`,
+        title: letterStatus[letter.fStatus - 1],
         start: letter.fFromDT.toString().substring(0, 10),
         end: moment(letter.fToDT.toString()).add(1, 'day').toISOString().substring(0, 10),
         backgroundColor,
@@ -118,9 +109,49 @@ class Calendar extends React.Component {
       }
     })
 
-    this.setState({ events });
+    isAdmin ? this.setAdminEvents(events) : this.setState({ events });
   }
 
+  setAdminEvents = async (events) => {
+    const { cancelSource } = this;
+    const { selectedDate } = this.state;
+    const selectedMonth = selectedDate.month() + 1;
+    const selectedYear = selectedDate.year();
+
+    const adminFilterData = {
+      fromDay: 1,
+      fromMonth: selectedMonth,
+      fromYear: selectedYear,
+      toDay: selectedDate.endOf('months').date(),
+      toMonth: selectedMonth,
+      toYear: selectedYear,
+      size: 0,
+    };
+
+    const res = await getAllLetterByFilter(cancelSource.token, adminFilterData);
+
+    const adminLetters = res.data.leaveLetters.filter(letter => !events.find(e => e.id === letter.fId));
+
+    adminLetters.map(letter => {
+      const backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      const textColor = 'white'
+
+      const event = {
+        id: letter.fId,
+        title: `${letter.fUserFullName} - ${letterStatus[letter.fStatus - 1]}`,
+        start: letter.fFromDT.toString().substring(0, 10),
+        end: moment(letter.fToDT.toString()).add(1, 'day').toISOString().substring(0, 10),
+        backgroundColor,
+        borderColor: backgroundColor,
+        textColor,
+      }
+
+      events.push(event);
+    })
+
+    this.setState({ events });
+  }
+  
   render() {
     return (
       <div style={{ borderTop: '4px solid #fac863', borderBottom: '4px solid #fac863', paddingTop: '20px' }}>
