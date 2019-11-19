@@ -123,36 +123,25 @@ export const getUsedDayOff = (cancelToken = undefined, userId, toMonth, inYear) 
   });
 } 
 
-export const getDemandLetterByFilter = (cancelToken = undefined, filterOptions) => {
-  const {userId, fromMonth, fromYear, toMonth, toYear, status, page = 1, size = 10} = filterOptions;
-  
-  const url = `${SERVER_HOST_DEV}/leaveletter/filter?userId=${userId}`
-            + (fromMonth && fromYear && !isNaN(fromMonth) && !isNaN(fromYear) ? `&fromMonth=${fromMonth}&fromYear=${fromYear}` : '')
-            + (toMonth && toYear && !isNaN(toMonth) && !isNaN(toYear) ? `&toMonth=${toMonth}&toYear=${toYear}` : '')
-            + (page ? `&page=${page}` : '')
-            + (size ? `&size=${size}` : '')
-            + (status ? `&status=${status}` : '');
+export const getDemandLetterByFilter = (cancelToken = undefined, filterOptions) => { 
+  const url = `${SERVER_HOST_DEV}/leaveletter/filter`;
+ 
   return axios.get(url, {
     headers: {
       'x-access-token': getCookie(ACCESS_TOKEN_KEY)
     },
+    params: filterOptions,
     cancelToken
   })
 }
 
 export const getAllLetterByFilter = (cancelToken = undefined, filterOptions) => {
-  const {fromDay ,fromMonth, fromYear, toDay, toMonth, toYear, status, page = 1, size = 10} = filterOptions;
-
-  const url = `${SERVER_HOST_DEV}/leaveletter?`
-          + (fromMonth && fromYear && !isNaN(fromMonth) && !isNaN(fromYear) ? `&fromDay=${fromDay}&fromMonth=${fromMonth}&fromYear=${fromYear}` : '')
-          + (toMonth && toYear && !isNaN(toMonth) && !isNaN(toYear) ? `&toDay=${toDay}&toMonth=${toMonth}&toYear=${toYear}` : '')
-          + (page ? `&page=${page}` : '')
-          + (size ? `&size=${size}` : '')
-          + (status ? `&status=${status}` : '');
+  const url = `${SERVER_HOST_DEV}/leaveletter`;
   return axios.get(url, {
     headers: {
       'x-access-token': getCookie(ACCESS_TOKEN_KEY)
     },
+    params: filterOptions,
     cancelToken
   })
 }

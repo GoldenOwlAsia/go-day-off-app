@@ -142,6 +142,7 @@ class LetterManagement extends Component {
         toYear, 
         status: values.status,
       }
+
       const { 
         data: { success, leaveLetters, count }
       } = await this.props.filterAPI( this.cancelSource.token, filterData);
@@ -156,7 +157,6 @@ class LetterManagement extends Component {
             count,
             letters: leaveLetters,
           }, () => {
-            this.props.handleShowNotif(NOTIF_SUCCESS, `Load data completed!`)
             formikActions !== undefined && formikActions.setSubmitting(false)
           }
         );
@@ -195,7 +195,7 @@ class LetterManagement extends Component {
           count,
           page,
           size 
-        }, () => this.props.handleShowNotif(NOTIF_SUCCESS, `Load data completed!`)
+        }, () => {}
       )
     )
     .catch(error => {
@@ -230,9 +230,7 @@ class LetterManagement extends Component {
             letters: leaveLetters,
             page,
             size,
-          }, () => {
-            this.props.handleShowNotif(NOTIF_SUCCESS, `Load data completed!`)
-          }
+          }, () => {}
         );
       }
     }

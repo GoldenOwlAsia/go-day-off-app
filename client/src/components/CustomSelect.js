@@ -23,7 +23,7 @@ const SelectCustom = ({
   options,
   classes,
   onChange,
-  ...props,
+  ...props
 }) => {
   const selectBoxId = `select-box-${shortid.generate()}`
   return (
