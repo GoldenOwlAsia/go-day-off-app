@@ -104,11 +104,17 @@ class Calendar extends React.Component {
     const letters = res.data.leaveLetters;
 
     const events = letters.map(letter => {
+      let backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      let textColor = 'white'
+
       return {
         id: letter.fId,
         title: `${isAdmin ? `${letter.fUserFullName} - ` : ''}${letterStatus[letter.fStatus - 1]}`,
         start: letter.fFromDT.toString().substring(0, 10),
         end: moment(letter.fToDT.toString()).add(1, 'day').toISOString().substring(0, 10),
+        backgroundColor,
+        borderColor: backgroundColor,
+        textColor,
       }
     })
 
@@ -123,8 +129,8 @@ class Calendar extends React.Component {
           defaultView="dayGridMonth" 
           plugins={[dayGridPlugin]} 
           events={this.state.events}
-          eventColor={'#fac863'}
-          eventTextColor={'black'}
+          // eventColor={'#fac863'}
+          // eventTextColor={'black'}
           eventClick={this.onEventClick}
           datesRender={this.viewRender}
         />
