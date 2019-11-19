@@ -322,7 +322,7 @@ class CreateNewAccount extends React.Component {
                         />
                       </Grid>
                       {/** address  */}
-                      <Grid item xs={12}>
+                      <Grid item xs={12} sm={6}>
                         <Field
                           name="address"
                           render={({ field, form, ...otherProps }) => {
@@ -339,7 +339,7 @@ class CreateNewAccount extends React.Component {
                           }}
                         />
                       </Grid>
-                      {/** team name */}
+                      {/* * team name
                       <Grid item xs={12} sm={6}>
                         <Field
                           name="teamId"
@@ -355,7 +355,8 @@ class CreateNewAccount extends React.Component {
                             );
                           }}
                         />
-                      </Grid>
+                      </Grid> */}
+                      {/* Comment for now */}
                       {/** position name */}
                       <Grid item xs={12} sm={6}>
                         <Field
@@ -401,6 +402,7 @@ class CreateNewAccount extends React.Component {
                                 multiline
                                 fullWidth
                                 label="Password"
+                                type="password"
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}

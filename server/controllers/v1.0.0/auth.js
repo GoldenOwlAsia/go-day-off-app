@@ -56,7 +56,7 @@ Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeHR, async (r
     // add foreign keys
     const { fPosition, fTeamId, fTypeId } = entity;
     if (fPosition) entity.positions_fId = fPosition;
-    if (fTeamId) entity.teams_fId = fTeamId;
+    if (fTeamId) entity.teams_fId = fTeamId; else entity.fTeamId = 'A91fa';
     if (fTypeId) entity.userPermission_fId = fTypeId;
 
     const user = await userModel.add(entity);
