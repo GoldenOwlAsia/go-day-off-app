@@ -24,10 +24,10 @@ export const YupValidationSchema = Yup.object().shape({
 export const CustomValidationSchema = (values) => {
   let errors = {};
   //Validate OtherReason
-  if (values.reason === mockupLeaveLetterReasons[mockupLeaveLetterReasons.length - 1].value 
-    && values.otherReason === '') {
-      errors.otherReason = `'Reason detail' can't be empty`;
-  }
+  // if (values.reason === mockupLeaveLetterReasons[mockupLeaveLetterReasons.length - 1].value 
+  //   && values.otherReason === '') {
+  //     errors.otherReason = `'Reason detail' can't be empty`;
+  // } // comment for now
   if (compareDatesWithoutTime(values.startDate, values.endDate) === 1) {
     errors.startDate = `'From' date can't be after 'To' date`
   }
