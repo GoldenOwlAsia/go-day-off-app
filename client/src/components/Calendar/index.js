@@ -78,6 +78,7 @@ class Calendar extends React.Component {
       toDay: selectedDate.endOf('months'),
       toMonth: selectedMonth,
       toYear: selectedYear,
+      size: 0,
     }
 
     const res = await getAllLetterByFilter(this.cancelSource.token, filterData);
