@@ -111,7 +111,7 @@ CREATE TABLE `positions` (
 
 LOCK TABLES `positions` WRITE;
 /*!40000 ALTER TABLE `positions` DISABLE KEYS */;
-INSERT INTO `positions` VALUES ('1qRly','Accountant'),('8mCqq','CTO'),('B4QIq','Tech Lead'),('cpvd7','Intern/Fresher'),('hGKx5','COO'),('ir0gE','Team Leader'),('JVh4R','Business Analyst (BA)'),('Kebva','Digital Marketer'),('mXLNt','Project Assistant (PA)'),('MYPyH','Software Tester'),('psS14','Human Resouces (HR)'),('s8l4h','Designer'),('Sz0d1','CEO'),('U4d4k','Software Engineer (SE)'),('wHK7p','Project Manager (PM)');
+INSERT INTO `positions` VALUES ('1qRly','CEO'),('8mCqq','CTO'),('B4QIq','Tech Lead'),('cpvd7','Admin'),('hGKx5','PHP Team Lead'),('ir0gE','PHP Vice Leader'),('JVh4R','JS Team Lead'),('Kebva','JS Vice Lead'),('mXLNt','Rails Team Lead'),('MYPyH','Rails Vice Lead'),('psS14','PC Team Lead'),('s8l4h','PC Vice Lead'),('Sz0d1','Developer'),('U4d4k','Project Coordinator (PC)'),('wHK7p','Quality Control (QC)'),('mT4Nc','Designer');
 /*!40000 ALTER TABLE `positions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -217,7 +217,7 @@ CREATE TABLE `userPermission` (
 
 LOCK TABLES `userPermission` WRITE;
 /*!40000 ALTER TABLE `userPermission` DISABLE KEYS */;
-INSERT INTO `userPermission` VALUES ('3sVfP','Personnel'),('NH6Bs','HR');
+INSERT INTO `userPermission` VALUES ('3sVfP','Personnel'),('NH6Bs','HR'), ('1J85n','Admin'), ('CdkR0','Supper Admin');
 /*!40000 ALTER TABLE `userPermission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -291,7 +291,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('5g3bqeTgu6','Nhan su','HR1','psS14','0123456789','A91fa','NH6Bs','nhansuHR1@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','nhansu1','psS14','NH6Bs','A91fa'),('6kI9baxAUv','Truong nhom','Ruby','ir0gE','0123456789','4TCgb','3sVfP','rubyLead@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','rubylead','ir0gE','3sVfP','4TCgb'),('eKmuZqYzzm','Nolan','Christopher','B4QIq','0123456789','A91fa','NH6Bs','abc@gojs.com',3,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','hr1','B4QIq','3sVfP','A91fa'),('H8UIAdsy7T','Adena','Justin','mXLNt','0778329121','1LwZq','NH6Bs','nulla.Integer@Aliquam.net',3,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','hr',NULL,NULL,NULL),('LzPq90f8bZ','Truong nhom','PA','ir0gE','0123456789','kTW7B','3sVfP','paLead@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','palead','ir0gE','3sVfP','kTW7B'),('MNeCqLCc4y','Truong nhom','PHP','ir0gE','0123456789','1LwZq','3sVfP','phpLead@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','phplead','ir0gE','3sVfP','1LwZq'),('pJa4TkFAz8','Truong nhom','Design','ir0gE','0123456789','5eMvD','3sVfP','designLead@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','designlead','ir0gE','3sVfP','5eMvD'),('Pq2UWS3gJm','Truong nhom','Javascript','ir0gE','0123456789','FfI2V','3sVfP','jsLead@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','jslead','ir0gE','3sVfP','FfI2V'),('rY5f9xkqZJ','Nhan su','HR2','psS14','0123456789','A91fa','NH6Bs','nhansuHR2@go.com',1,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','nhansu2','psS14','NH6Bs','A91fa'),('Ucb07m5zgI','Truong nhom','QA','ir0gE','0123456789','Gg6sG','3sVfP','qaLead@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','qalead','ir0gE','3sVfP','Gg6sG'),('wYC0nI3LqV','Giam doc','X','Sz0d1','0123456789','A91fa','NH6Bs','giamdoc@go.com',1,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','giamdoc','Sz0d1','NH6Bs','A91fa');
+INSERT INTO `users` VALUES ('5g3bqeTgu6','Admin','GO','psS14','0123456789','A91fa','NH6Bs','nhansuHR1@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','admin','psS14','NH6Bs','A91fa'),('4r5dtH76nj','User','GO','psS14','0123456789','A91fa','3sVfP','user@go.testor',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','userGO','psS14','NH6Bs','A91fa');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
