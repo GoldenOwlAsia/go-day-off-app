@@ -8,7 +8,8 @@ const uid = require('rand-token').uid;
 const {
   userRefToken: refTokenModel,
   users: userModel,
-  userPermission: permissionModel
+  userPermission: permissionModel,
+  teams: teamModel
 } = require('../../models');
 
 /**
@@ -56,7 +57,13 @@ Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeHR, async (r
     // add foreign keys
     const { fPosition, fTeamId, fTypeId } = entity;
     if (fPosition) entity.positions_fId = fPosition;
-    if (fTeamId) entity.teams_fId = fTeamId; else entity.fTeamId = 'A91fa';
+
+    const teams = await teamModel.loadAll();
+
+    const defaultTeamId = teams.find(team => team.fTeamName === 'Khác').fId;
+
+    if (fTeamId) { entity.teams_fId = fTeamId; } 
+    else { entity.fTeamId = defaultTeamId; }
     if (fTypeId) entity.userPermission_fId = fTypeId;
 
     const user = await userModel.add(entity);
