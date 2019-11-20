@@ -62,6 +62,12 @@ class Calendar extends React.Component {
 
         this.setEvents();
       })
+
+      $(".fc-today-button").click(() => {
+        this.setState({ selectedDate: moment() });
+
+        this.setEvents();
+      })
     })
   }
 
