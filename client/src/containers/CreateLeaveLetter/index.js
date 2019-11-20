@@ -320,32 +320,6 @@ class AbsenceLetterWithFormik extends React.Component {
                         {/* Left side */}
                         <Grid item xs={12} sm={6} container spacing={8}>
                           <Grid item xs={12}>
-                            {/* Select Leave type */}
-                            <Field
-                              render={({ field, form }) => {
-                                return (
-                                  <SelectCustom
-                                    name="leaveType"
-                                    label="Leave Types"
-                                    value={values.leaveType}
-                                    options={leaveTypesList}
-                                    onBlur={handleBlur} //not handled
-                                    onChange={({ target: { name, value } }) => {
-                                      setFieldValue(name, value);
-                                    }}
-                                  />
-                                );
-                              }}
-                            />
-                            <ErrorMessage name="leaveType">
-                              {msg => (
-                                <div className={classes.errorMessage}>
-                                  {msg}
-                                </div>
-                              )}
-                            </ErrorMessage>
-                          </Grid>
-                          <Grid item xs={12}>
                             {/* Show Duration */}
                             <Field
                               name="duration"
@@ -426,6 +400,32 @@ class AbsenceLetterWithFormik extends React.Component {
                         {/* Right side */}
                         <Grid item xs={12} sm={6} container spacing={8}>
                           <Grid item xs={12}>
+                            {/* Select Leave type */}
+                            <Field
+                              render={({ field, form }) => {
+                                return (
+                                  <SelectCustom
+                                    name="leaveType"
+                                    label="Leave Types"
+                                    value={values.leaveType}
+                                    options={leaveTypesList}
+                                    onBlur={handleBlur} //not handled
+                                    onChange={({ target: { name, value } }) => {
+                                      setFieldValue(name, value);
+                                    }}
+                                  />
+                                );
+                              }}
+                            />
+                            <ErrorMessage name="leaveType">
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
+                          </Grid>
+                          <Grid item xs={12}>
                             {/* Supervisor */}
                             <Field
                               render={({ field, form }) => (
@@ -465,9 +465,9 @@ class AbsenceLetterWithFormik extends React.Component {
                               )}
                             </ErrorMessage>
                           </Grid>
-                          <Grid item xs={12}>
+                          {/* <Grid item xs={12}> */}
                             {/* Substitute Selection  */}
-                            <Field
+                            {/* <Field
                               render={({ field, form }) => (
                                 <SelectCustom
                                   name="substituteId"
@@ -486,10 +486,36 @@ class AbsenceLetterWithFormik extends React.Component {
                                 </div>
                               )}
                             </ErrorMessage>
-                          </Grid>
+                          </Grid> */}
                           <Grid item xs={12}>
                             {/* Reason Selection  */}
                             <Field
+                              render={({ field, form }) => (
+                                    <TextField
+                                      required
+                                      multiline
+                                      fullWidth
+                                      id="reason"
+                                      name="reason"
+                                      label="Reason"
+                                      onBlur={handleBlur}
+                                      onChange={({ target: { name, value } }) =>
+                                        setFieldValue(name, value)
+                                      }
+                                    />
+                              )}
+                            />
+                            <ErrorMessage name="reason">
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
+                          </Grid>
+                          {/* <Grid item xs={12}> */}
+                            {/* Reason Selection  */}
+                            {/* <Field
                               render={({ field, form }) => (
                                 <SelectCustom
                                   name="reason"
@@ -511,9 +537,9 @@ class AbsenceLetterWithFormik extends React.Component {
                                 </div>
                               )}
                             </ErrorMessage>
-                          </Grid>
+                          </Grid> */}
                           {/* Reason in detail */}
-                          <Grid item xs={12}>
+                          {/* <Grid item xs={12}>
                             {otherReasonSelected ? (
                               <React.Fragment>
                                 <Field
@@ -542,7 +568,7 @@ class AbsenceLetterWithFormik extends React.Component {
                                 </ErrorMessage>
                               </React.Fragment>
                             ) : null}
-                          </Grid>
+                          </Grid> */}
                           {/* End - Reason in detail */}
                         </Grid>
                         {/* End - Right side */}
@@ -620,7 +646,7 @@ AbsenceLetterWithFormik.defaultProps = {
     informTo: [], //must be an array
     substituteId: '', //Temporarily mockup
     reason: '',
-    otherReason: '',
+    // otherReason: '', // comment for now
     fromOpt: LeaveDurationOptions.all,
     toOpt: LeaveDurationOptions.all
   }

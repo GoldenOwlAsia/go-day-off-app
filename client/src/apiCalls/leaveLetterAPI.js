@@ -61,14 +61,14 @@ export const createLeaveLetter = letterEntity => {
       toDT: letterEntity.endDate,
       toOpt: letterEntity.toOpt,
       status: LEAVE_REQUEST_PENDING, // This must be set on the server-side
-      substituteId: letterEntity.substituteId,
+      // substituteId: letterEntity.substituteId, //comment for now
       userId: getUserId(),
       approver: letterEntity.approver,
       informTo:letterEntity.informTo,
-      reason:
-        letterEntity.otherReason !== ''
-          ? letterEntity.otherReason
-          : letterEntity.reason
+      reason: letterEntity.reason,
+      //   letterEntity.otherReason
+      //     ? letterEntity.otherReason
+      //     : letterEntity.reason  //comment for now
     },
     {
       headers: {
