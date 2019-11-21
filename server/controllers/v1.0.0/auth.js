@@ -60,7 +60,7 @@ Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeHR, async (r
 
     const teams = await teamModel.loadAll();
 
-    const defaultTeamId = teams.find(team => team.fTeamName === 'Khác').fId;
+    const defaultTeamId = teams.find(team => team !== undefined).fId;
 
     if (fTeamId) { entity.teams_fId = fTeamId; } 
     else { entity.fTeamId = defaultTeamId; }
