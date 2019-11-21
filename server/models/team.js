@@ -9,13 +9,13 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING(45),
         allowNull: false
       },
-      fTeamLead: {
-        type: DataTypes.STRING(10),
-        allowNull: false
-      },
-      users_fId: {
-        type: DataTypes.STRING(10)
-      }
+      // fTeamLead: {
+      //   type: DataTypes.STRING(10),
+      //   allowNull: false
+      // },
+      // users_fId: {
+      //   type: DataTypes.STRING(10)
+      // }
     },
     {
       timestamps: false,
@@ -23,7 +23,7 @@ export default (sequelize, DataTypes) => {
       tableName: "teams",
       classMethods: {
         associate: models => {
-          Team.belongsTo(models.users, { foreignKey: "users_fId" });
+          // Team.belongsTo(models.users, { foreignKey: "users_fId" });
         }
       }
     });

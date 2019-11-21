@@ -17,7 +17,15 @@ const { teams: teamModel } = require("../../models");
 Router.get("/", async (req, res) => {
   try {
     const teams = await teamModel.loadAll();
-    handleSuccess(res, { teams });
+    handleSuccess(res, { teams: teams.sort(( a, b ) => {
+      if ( a.fTeamName < b.fTeamName ){
+        return -1;
+      }
+      if ( a.fTeamName > b.fTeamName ){
+        return 1;
+      }
+      return 0;
+    }) });
   } catch (err) {
     handleFailure(res, { err, route: req.originalUrl });
   }

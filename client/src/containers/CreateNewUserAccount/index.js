@@ -339,7 +339,7 @@ class CreateNewAccount extends React.Component {
                           }}
                         />
                       </Grid>
-                      {/* * team name
+                      {/* team name */}
                       <Grid item xs={12} sm={6}>
                         <Field
                           name="teamId"
@@ -355,8 +355,7 @@ class CreateNewAccount extends React.Component {
                             );
                           }}
                         />
-                      </Grid> */}
-                      {/* Comment for now */}
+                      </Grid>
                       {/** position name */}
                       <Grid item xs={12} sm={6}>
                         <Field
