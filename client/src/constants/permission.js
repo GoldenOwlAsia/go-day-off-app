@@ -1,8 +1,8 @@
 export const userTypes = {
   MODE_PERSONNEL: 'personnel',
-  MODE_HR: 'hr'
+  MODE_ADMIN: 'admin'
 };
 export const responseUserPermission = {
   USER: '3sVfP',
-  HR: 'NH6Bs'
+  ADMIN: '1J85n'
 };
