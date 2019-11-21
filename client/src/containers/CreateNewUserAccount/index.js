@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 
 import {
   Paper,
@@ -22,7 +22,7 @@ import DashContainer from '../DashContainer';
 import { responseUserPermission } from '../../constants/permission';
 
 //API
-import Axios from 'axios';
+import Axios, { CancelToken } from 'axios';
 import { getAllTeams, getAllPositions } from '../../apiCalls/supportingAPIs';
 import { createNewUser } from '../../apiCalls/userAPIs';
 import moment from 'moment';
@@ -30,6 +30,7 @@ import moment from 'moment';
 // Notification redux
 import { showNotification } from '../../redux/actions/notificationActions';
 import { NOTIF_ERROR, NOTIF_SUCCESS } from '../../constants/notification';
+// import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -101,13 +102,18 @@ const styles = theme => ({
 class CreateNewAccount extends React.Component {
   state = {
     allTeams: [],
-    allPositions: []
+    allPositions: [],
+    // dayOffSetting: 0,
   };
 
+  // cancelSource = CancelToken.source();
+
   componentDidMount = () => {
-    Axios.all([getAllTeams(), getAllPositions()])
+    Axios.all([getAllTeams(), getAllPositions(), {/* getDayOffSetting(this.cancelSource.token) */}])
       .then(
-        Axios.spread((allTeamResponse, allPositionResponse) => {
+        Axios.spread((allTeamResponse, allPositionResponse
+          // , dayOffResponse
+          ) => {
           let allTeams = allTeamResponse.data.teams.map(item => ({
             value: item.fId,
             label: item.fTeamName
@@ -118,10 +124,13 @@ class CreateNewAccount extends React.Component {
             label: item.fPosName
           }));
 
+          // let dayOffSetting = dayOffResponse.data.settings[0].fValue;
+
           this.setState(prevState => ({
             ...prevState,
             allTeams,
-            allPositions
+            allPositions,
+            // dayOffSetting
           }));
         })
       )
@@ -131,12 +140,23 @@ class CreateNewAccount extends React.Component {
   };
   render() {
     const { classes, initialValues, handleShowNotif } = this.props;
-    const { allTeams, allPositions } = this.state;
+    const { 
+      allPositions,
+      allTeams,
+      // dayOffSetting 
+      } = this.state;
+
     return (
       <DashContainer className={classes.layout}>
         <Paper className={classes.paper}>
           <CssBaseline />
           <Formik
+            validate={values => {
+              let errors = {};
+              // if (values.rawPwd.length < x) // comment for now
+              if (values.rawConFirmPwd !== values.rawPwd) errors.rawConFirmPwd = 'Confirm password does not match';
+              // if (isNaN(values.daysOff)) errors.daysOff = 'Must be a number'
+            }}
             initialValues={initialValues}
             onSubmit={(values, actions) => {
               //Call api update here
@@ -287,23 +307,6 @@ class CreateNewAccount extends React.Component {
                           component={DatePickerField}
                         />
                       </Grid>
-                      {/** email  */}
-                      <Grid item xs={12} sm={6}>
-                        <Field
-                          name="email"
-                          render={({ field, form, ...otherProps }) => {
-                            return (
-                              <TextField
-                                fullWidth
-                                label="Email"
-                                value={field.value}
-                                name={field.name}
-                                onChange={handleChange}
-                              />
-                            );
-                          }}
-                        />
-                      </Grid>
                       {/** phone number  */}
                       <Grid item xs={12} sm={6}>
                         <Field
@@ -321,6 +324,70 @@ class CreateNewAccount extends React.Component {
                           }}
                         />
                       </Grid>
+                      {/** email  */}
+                      <Grid item xs={12} sm={6}>
+                        <Field
+                          name="email"
+                          render={({ field, form, ...otherProps }) => {
+                            return (
+                              <TextField
+                                fullWidth
+                                label="Email"
+                                value={field.value}
+                                name={field.name}
+                                onChange={handleChange}
+                              />
+                            );
+                          }}
+                        />
+                      </Grid>
+                      {/** rawPwd  */}
+                      <Grid item xs={12} sm={6}>
+                        <Field
+                          name="rawPwd"
+                          render={({ field, form, ...otherProps }) => {
+                            return (
+                              <TextField
+                                fullWidth
+                                label="Password"
+                                type="password"
+                                value={field.value}
+                                name={field.name}
+                                onChange={handleChange}
+                              />
+                            );
+                          }}
+                        />
+                      </Grid>
+                      {/** rawConfirmPwd  */}
+                      {/* <Grid item xs={12} sm={6}>
+                        <Field
+                          name="rawConfirmPwd"
+                          render={({ field, form, ...otherProps }) => {
+                            return (
+                              <TextField
+                                fullWidth
+                                label="Confirm Password"
+                                type="password"
+                                value={field.value}
+                                name={field.name}
+                                onChange={handleChange}
+                              />
+                            );
+                          }}
+                        />
+                        <ErrorMessage name="rawConfirmPwd">
+                          {msg => (
+                            <div style={{ 
+                              color: 'red',
+                              fontSize: 12,
+                              fontWeight: 500
+                              }}>
+                                {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
+                      </Grid> */}
                       {/** address  */}
                       <Grid item xs={12} sm={6}>
                         <Field
@@ -374,7 +441,7 @@ class CreateNewAccount extends React.Component {
                         />
                       </Grid>
                       {/** username  */}
-                      <Grid item xs={12} sm={6}>
+                      {/* <Grid item xs={12} sm={6}>
                         <Field
                           name="username"
                           render={({ field, form, ...otherProps }) => {
@@ -390,18 +457,18 @@ class CreateNewAccount extends React.Component {
                             );
                           }}
                         />
-                      </Grid>
-                      {/** rawPwd  */}
-                      <Grid item xs={12} sm={6}>
+                      </Grid> */}
+                      {/** day-off  */}
+                      {/* <Grid item xs={12} sm={6}>
                         <Field
-                          name="rawPwd"
+                          name="daysOff"
                           render={({ field, form, ...otherProps }) => {
                             return (
                               <TextField
-                                multiline
                                 fullWidth
-                                label="Password"
-                                type="password"
+                                label="Remaining Days-off"
+                                type="number"
+                                inputProps={{ min: 0, max: dayOffSetting, step: 1 }}
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}
@@ -409,7 +476,7 @@ class CreateNewAccount extends React.Component {
                             );
                           }}
                         />
-                      </Grid>
+                      </Grid> */}
                     </Grid>
                   </React.Fragment>
                   <React.Fragment>
@@ -455,8 +522,9 @@ class CreateNewAccount extends React.Component {
 
 CreateNewAccount.defaultProps = {
   initialValues: {
-    username: '',
+    // username: '', // comment for now
     rawPwd: '',
+    // rawConFirmPwd: '',
     firstName: '',
     lastName: '',
     gender: 0,
