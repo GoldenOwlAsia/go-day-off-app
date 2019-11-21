@@ -138,17 +138,17 @@ Router.patch("/profile", bodyMustNotEmpty, userMustBeHR, async (req, res) => {
 
 Router.get('/approver', async (req, res) => {
   try {
-    // get hr user type id
+    // get admin user type id
     const userTypeIds = await permissionModel.loadAll(['fId'], {
-      where: { fUserType: 'HR' }
+      where: { fUserType: 'Admin' }
     });
     if (!userTypeIds || userTypeIds.length !== 1)
-      throw { msg: 'USER_NOT_FOUND' };
+      throw { msg: 'USER_TYPE_NOT_FOUND' };
 
-    // get users who are hr
-    const hrId = userTypeIds[0].get({ plain: true }).fId;
+    // get users who are admin
+    const adminId = userTypeIds[0].get({ plain: true }).fId;
     const users = await userModel.loadAll(['fId', 'fFirstName', 'fLastName'], {
-      where: { fTypeId: hrId }
+      where: { fTypeId: adminId }
     });
     const approvers = users.map(user => user.get({ plain: true }));
 
@@ -162,31 +162,37 @@ Router.get('/team-leader', async (req, res) => {
   try {
     const { userId } = req.token_payload;
     // find which team the user belongs to
-    const users = await userModel.loadAll(['fTeamId'], {
+    const team = await userModel.loadAll(['fTeamId'], {
       where: { fId: userId }
     });
-    if (!users || users.length !== 1) throw { msg: 'USER_NOT_FOUND' };
+    if (!team || team.length !== 1) throw { msg: 'TEAM_NOT_FOUND' };
+    const { fTeamId } = team[0].get({ plain: true });
+
+    // find team leader position
+    const position = await positionModel.loadAll(['fId'], { where: { fPosName: 'Leader' } });
+    if (!position || position.length !== 1) throw { msg: 'POSITION_NOT_FOUND' };
+    const fPosition = position[0].dataValues.fId;
 
     // find which user is the team leader
-    const { fTeamId } = users[0].get({ plain: true });
-    const teams = await teamModel.loadAll(['fTeamLead'], { where: { fId: fTeamId } });
-    if (!teams || teams.length !== 1) throw { msg: 'TEAM_NOT_FOUND' };
+    // const { fTeamId } = team[0].get({ plain: true });
+    // const teams = await teamModel.loadAll(['fTeamLead'], { where: { fId: fTeamId } });
+    // if (!teams || teams.length !== 1) throw { msg: 'TEAM_NOT_FOUND' };
 
     // find the team leader name
-    const { fTeamLead } = teams[0].get({ plain: true });
-    const leaders = await userModel.loadAll(['fFirstName', 'fLastName', 'fEmail'], { where: { fId: fTeamLead }});
-
-    if (!leaders || leaders.length !== 1) {
+    // const { fTeamLead } = teams[0].get({ plain: true });
+    const leader = await userModel.loadAll(['fId', 'fFirstName', 'fLastName', 'fEmail'], { where: { fTeamId, fPosition }});
+    
+    if (!leader || leader.length !== 1) {
       handleSuccess(res, 
         {
-          msg: 'LEADERS_NOT_FOUND',
+          msg: 'LEADER_NOT_FOUND',
           teamLeader: {}
         })
     }
     else {
-      const { fFirstName, fLastName, fEmail } = leaders[0].get({ plain: true });
+      const { fId, fFirstName, fLastName, fEmail } = leader[0].get({ plain: true });
       const teamLeader = {
-        fId: fTeamLead,
+        fId,
         fFirstName,
         fLastName,
         fEmail
