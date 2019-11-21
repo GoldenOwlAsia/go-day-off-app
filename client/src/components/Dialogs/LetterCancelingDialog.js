@@ -22,7 +22,7 @@ const styles = theme => ({
 
 const LetterCancelingDialogWithFormik = (props) => {
   const { classes, title, open, contentText, onClose, onConfirm, value, field, form} = props;
-  const isEnableSendButton = Object.keys(form.errors).length > 0 ? false : true;
+  const isEnableSendButton = !!Object.keys(form.errors).length;
 
   return (
     <Dialog

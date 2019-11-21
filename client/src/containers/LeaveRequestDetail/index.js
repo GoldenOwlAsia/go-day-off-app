@@ -183,10 +183,10 @@ class LeaveRequestDetail extends React.Component {
             validate={(values) => {
               let errors = {};
               if (rejectDialogOpen) {
-                if (values.rejectReason.length < 50  ) 
-                  errors.rejectReason = `'Reject reason' can't be less than 50 characters`;
-                else if (values.rejectReason.length > 250 )
-                  errors.rejectReason = `'Reject reason' can't be more than 250 characters`;
+                if (values.rejectReason.length < 20  ) 
+                  errors.rejectReason = `'Reject reason' can't be less than 20 characters`;
+                // else if (values.rejectReason.length > 250 )
+                //   errors.rejectReason = `'Reject reason' can't be more than 250 characters`;
               }
               return errors;
             }}
