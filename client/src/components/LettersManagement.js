@@ -116,7 +116,7 @@ class LetterManagement extends Component {
           toDate   = new Date(values.toDate);
 
     let userId;
-    if (type && type === userTypes.MODE_HR) {
+    if (type && type === userTypes.MODE_ADMIN) {
       userId = '';
     } else {
       if (demandUserId !== undefined) {
@@ -245,7 +245,7 @@ class LetterManagement extends Component {
     const handleChangePageFunc = this.props.filterValues !== undefined ? this.handleChangPageWithFilter : this.handleChangePage;
 
     const tableInfo = {
-      columns: type === userTypes.MODE_HR ? HRColumns : defaultColumns,
+      columns: type === userTypes.MODE_ADMIN ? HRColumns : defaultColumns,
       title: <Typography component='p' variant='h5' className={classes.title}> {title} </Typography>,
       data: Array.isArray(letters)
         ? letters.map(({ fUserFullName, fFromDT, fToDT, fStatus, fId, fRdt, fRejectType }) => {
@@ -265,7 +265,7 @@ class LetterManagement extends Component {
               </Button>
             </Link>
           ];
-          if (type === userTypes.MODE_HR) dataSet.unshift(fUserFullName || 'Unknown');
+          if (type === userTypes.MODE_ADMIN) dataSet.unshift(fUserFullName || 'Unknown');
           return dataSet;
         }) : [],
       options: {
@@ -300,7 +300,7 @@ class LetterManagement extends Component {
       {
         dataSet: [{
           columns:
-            type === userTypes.MODE_HR
+            type === userTypes.MODE_ADMIN
               ? HRExportColumns
               : defaultExportColumns,
           data: exports.map(({ fUserFullName, fApproverFullName,
@@ -313,7 +313,7 @@ class LetterManagement extends Component {
               { value: fSubstituteFullName },
               { value: fRejectType && fRejectType === REJECT_TYPE.BY_SELF? `CANCELED` : letterStatusText[fStatus] },
             ];
-            if(type === userTypes.MODE_HR) row.unshift({ value: fUserFullName });
+            if(type === userTypes.MODE_ADMIN) row.unshift({ value: fUserFullName });
             return formatRow(row);
           })
         }],

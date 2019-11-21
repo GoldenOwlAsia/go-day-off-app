@@ -17,7 +17,15 @@ const { positions: positionModel } = require("../../models");
 Router.get("/", async (req, res) => {
   try {
     const positions = await positionModel.loadAll();
-    handleSuccess(res, { positions });
+    handleSuccess(res, { positions: positions.sort(( a, b ) => {
+      if ( a.fPosName < b.fPosName ){
+        return -1;
+      }
+      if ( a.fPosName > b.fPosName ){
+        return 1;
+      }
+      return 0;
+    }) });
   } catch (err) {
     handleFailure(res, { err, route: req.originalUrl });
   }

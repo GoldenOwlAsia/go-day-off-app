@@ -264,7 +264,7 @@ class Dashboard extends React.Component {
                   {Object.keys(userTypes).some(
                     key => userTypes[key] === userType
                   ) && <PersonnelList />}
-                  {userType === userTypes.MODE_HR && <HRList />}
+                  {userType === userTypes.MODE_ADMIN && <HRList />}
                 </List>
                 {/* End - Left menu */}
               </Drawer>

@@ -16,6 +16,8 @@ export const getProfile = (id, cancelToken = undefined) => {
 };
 
 export const createNewUser = (userEntity, cancelToken = undefined) => {
+  delete userEntity.rawConfirmPwd;
+  userEntity.username = userEntity.email;
   return axios.post(
     `${SERVER_HOST_DEV}/auth/account`,
     {

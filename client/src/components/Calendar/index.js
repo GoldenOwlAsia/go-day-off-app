@@ -39,7 +39,7 @@ class Calendar extends React.Component {
     events: [],
   };
 
-  isAdmin = getUserTypeFromCookie() === userTypes.MODE_HR;
+  isAdmin = getUserTypeFromCookie() === userTypes.MODE_ADMIN;
 
   componentWillMount = async () => {
     this.cancelSource = CancelToken.source();

@@ -58,12 +58,8 @@ Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeHR, async (r
     const { fPosition, fTeamId, fTypeId } = entity;
     if (fPosition) entity.positions_fId = fPosition;
 
-    const teams = await teamModel.loadAll();
-
-    const defaultTeamId = teams.find(team => team.fTeamName === 'Khác').fId;
-
     if (fTeamId) { entity.teams_fId = fTeamId; } 
-    else { entity.fTeamId = defaultTeamId; }
+
     if (fTypeId) entity.userPermission_fId = fTypeId;
 
     const user = await userModel.add(entity);

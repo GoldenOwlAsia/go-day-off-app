@@ -18,14 +18,13 @@ import DashContainer from '../DashContainer';
 
 import { withStyles } from '@material-ui/core/styles';
 
-
 //ValidationSchema
 import ValidationSchema from './validationSchema';
 
 
 import { getUserId } from '../../helpers/authHelpers';
 import { getUserTypeFromCookie } from '../../helpers/getUserInfo';
-import { responseUserPermission } from '../../constants/permission'
+import { responseUserPermission, userTypes } from '../../constants/permission'
 
 
 //Notif redux
@@ -69,7 +68,7 @@ class EditPassword extends React.Component {
         this.setState({
           typeUser: res.data.user.fTypeId
         }, () => {
-          if (getUserTypeFromCookie() === 'hr' && this.state.typeUser !== responseUserPermission.HR) {
+          if (getUserTypeFromCookie() === userTypes.MODE_ADMIN && this.state.typeUser !== responseUserPermission.HR) {
             delete ValidationSchema.fields.fPassword;
           }
         }))
@@ -146,8 +145,8 @@ class EditPassword extends React.Component {
                           </Typography>
                         </React.Fragment>
                         {
-                          getUserTypeFromCookie() !== 'hr' || 
-                          (getUserTypeFromCookie() === 'hr' && typeUser === responseUserPermission.HR) ?
+                          getUserTypeFromCookie() !== userTypes.MODE_ADMIN || 
+                          (getUserTypeFromCookie() === userTypes.MODE_ADMIN && typeUser === responseUserPermission.HR) ?
                           <Grid item xs={12} sm={12}>
                             <Field
                               name="fPassword"

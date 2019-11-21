@@ -13,7 +13,7 @@ function AllLettersManagement() {
         All request letters
       </Typography>
       <br />
-      <LettersManagement api={getAllLeaveLetters} filterAPI={getAllLetterByFilter} type={userTypes.MODE_HR} />
+      <LettersManagement api={getAllLeaveLetters} filterAPI={getAllLetterByFilter} type={userTypes.MODE_ADMIN} />
     </DashContainer>
   );
 }

@@ -96,7 +96,7 @@ class EditAccountInfo extends React.Component {
     
     let demandUserId = userId;
 
-    if (userType === userTypes.MODE_HR && typeof(queryUserId) !== 'undefined') {
+    if (userType === userTypes.MODE_ADMIN && typeof(queryUserId) !== 'undefined') {
       demandUserId = queryUserId;
     }
     if (queryUserId !== this.demandUserId) {
@@ -203,7 +203,7 @@ class EditAccountInfo extends React.Component {
 
     const { userId, userType } = getUserEntity();
     const isCurrentLoggedInUser = (userId === demandUserId);
-    const isHrSession = userTypes.MODE_HR === userType;
+    const isHrSession = userTypes.MODE_ADMIN === userType;
     const isShowLetterList = (isHrSession && !isCurrentLoggedInUser && typeof(demandUserId) !== 'undefined');
 
     return (

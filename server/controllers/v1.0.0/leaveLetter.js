@@ -343,7 +343,7 @@ Router.get('/filter', async (req, res) => {
       fromYear = currentYear, toYear = currentYear, status = 0,
       page = DEFAULT_PAGE_ORDER, size = DEFAULT_PAGE_SIZE } = req.query;
 
-    if(toYear > currentYear) toYear = currentYear;
+    // if(toYear > currentYear) toYear = currentYear;
     if(isNaN(page) || !ALLOWED_PAGE_SIZE.includes(+size)) size = DEFAULT_PAGE_SIZE;
     if(+size === 0) size = Number.MAX_SAFE_INTEGER;
     if(isNaN(status) || !ALLOWED_STATUS.includes(+status)) status = DEFAULT_STATUS;
