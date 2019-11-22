@@ -185,8 +185,8 @@ class LeaveRequestDetail extends React.Component {
               if (rejectDialogOpen) {
                 if (values.rejectReason.length < 20  ) 
                   errors.rejectReason = `'Reject reason' can't be less than 20 characters`;
-                // else if (values.rejectReason.length > 250 )
-                //   errors.rejectReason = `'Reject reason' can't be more than 250 characters`;
+                else if (values.rejectReason.length > 250 )
+                  errors.rejectReason = `'Reject reason' can't be more than 250 characters`;
               }
               return errors;
             }}
@@ -350,7 +350,7 @@ class LeaveRequestDetail extends React.Component {
                           spacing={8}
                           className={classes.buttonGroupBottom}
                         >
-                        {demandUser.fTypeId === responseUserPermission['HR'] ? (
+                        {demandUser.fTypeId === responseUserPermission.ADMIN ? (
                           <React.Fragment>
                             <Field
                             render={({ field, form }) => (
@@ -421,7 +421,7 @@ class LeaveRequestDetail extends React.Component {
                         name='rejectReason'
                         open={rejectDialogOpen}
                         component={LetterCancelingDialog}
-                        title={demandUser && demandUser.fTypeId === responseUserPermission['HR'] ? 'Reject' : 'Cancel'}
+                        title={demandUser && demandUser.fTypeId === responseUserPermission.ADMIN ? 'Reject' : 'Cancel'}
                         onConfirm={async (form) => {
                           this.handleReject(form);
                           this.handleToggleRejectDialog(false);

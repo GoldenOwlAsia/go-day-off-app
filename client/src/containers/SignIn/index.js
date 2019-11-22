@@ -153,7 +153,7 @@ class LoginWithFormik extends React.Component {
                   render={({ field, form, ...otherProps }) => {
                     return (
                       <FormControl margin="normal" required fullWidth>
-                        <InputLabel htmlFor="username">Username</InputLabel>
+                        <InputLabel htmlFor="username">Email</InputLabel>
                         <Input
                           autoFocus
                           id="username"

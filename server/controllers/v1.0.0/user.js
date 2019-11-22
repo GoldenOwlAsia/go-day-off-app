@@ -38,7 +38,7 @@ const { DEFAULT_PAGE_ORDER, DEFAULT_PAGE_SIZE,
 /**
  * Middlewares
  */
-const userMustBeHR = require("../../middlewares/userMustBeHR");
+const userMustBeAdmin = require("../../middlewares/userMustBeAdmin");
 const bodyMustNotEmpty = require('../../middlewares/bodyMustNotEmpty');
 
 // Get user profile
@@ -51,10 +51,10 @@ Router.get('/profile', async (req, res) => {
       demandUserId = ownUserId;
     }
 
-    // HR can view profile of everyone
+    // Admin can view profile of everyone
     // Others can view oneself's
     const fUserType = await getPermissionByUserId(ownUserId);
-    if (!fUserType || (fUserType !== 'HR' && ownUserId !== demandUserId))
+    if (!fUserType || (fUserType !== 'Admin' && ownUserId !== demandUserId))
       throw { code: 401, msg: 'NO_PERMISSION' };
 
     const attributes = [
@@ -95,7 +95,7 @@ Router.get('/profile', async (req, res) => {
 });
 
 // Update user profile
-Router.patch("/profile", bodyMustNotEmpty, userMustBeHR, async (req, res) => {
+Router.patch("/profile", bodyMustNotEmpty, userMustBeAdmin, async (req, res) => {
   try {
     const keys = Object.keys(req.body);
     if (
@@ -244,7 +244,7 @@ Router.get('/substitutes', async (req, res) => {
   }
 });
 
-Router.get("/", userMustBeHR, async (req, res) => {
+Router.get("/", userMustBeAdmin, async (req, res) => {
   try {
     let { page = DEFAULT_PAGE_ORDER, size = DEFAULT_PAGE_SIZE } = req.query;
     if(isNaN(page) || page < 1) page = DEFAULT_PAGE_ORDER;
@@ -303,7 +303,7 @@ Router.put('/changePassword', async (req, res) => {
   
     const fUserType = await getPermissionByUserId(ownUserId);
 
-    if (fUserType && fUserType === 'HR' && ownUserId !== userId) { // admin đổi password user khác
+    if (fUserType && fUserType === 'Admin' && ownUserId !== userId) { // admin đổi password user khác
         const fPassword = sha256(newPassword);
   
         await userModel.modify({fPassword}, {

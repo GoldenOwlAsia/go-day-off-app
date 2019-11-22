@@ -23,7 +23,7 @@ const { LEAVING_FORM_ID_LEN } = require('../../configs/config');
 /**
  * Middlewares
  */
-const userMustBeHR = require('../../middlewares/userMustBeHR');
+const userMustBeAdmin = require('../../middlewares/userMustBeAdmin');
 const bodyMustNotEmpty = require('../../middlewares/bodyMustNotEmpty');
 
 /**
@@ -67,17 +67,17 @@ Router.get('/details', async (req, res) => {
   
     const userId = getIdFromToken(req.token_payload);
     const { fUserId } = letters[0].get({ plain: true });
-    if (fUserType !== 'HR' && userId !== fUserId) throw { code: 401, msg: 'NO_PERMISSION' };
+    if (fUserType !== 'Admin' && userId !== fUserId) throw { code: 401, msg: 'NO_PERMISSION' };
 
-    // only HR can view everyone's
+    // only Admin can view everyone's
     const leaveLetters = await leaveLetterModel.loadAll([], { where: { fId } });
     if (!leaveLetters || leaveLetters.length !== 1) throw { msg: 'LETTER_NOT_FOUND' };
 
     // load substitute fullName
     let letter = leaveLetters[0].get({ plain: true });
     const { fApprover, fSubstituteId } = letter;
-    // only HR marked as approver in letter is able to view and approve it
-    if (fUserType === 'HR' && fApprover !== userId && fUserId !== userId) throw { code: 401, msg: 'NO_PERMISSION' };
+    // only Admin marked as approver in letter is able to view and approve it
+    if (fUserType === 'Admin' && fApprover !== userId && fUserId !== userId) throw { code: 401, msg: 'NO_PERMISSION' };
 
     const users = await userModel.loadAll(['fFirstName', 'fLastName'], { where: { fId: fSubstituteId } });
     if (users.length) {
@@ -100,7 +100,7 @@ Router.get('/details', async (req, res) => {
   }
 });
 
-Router.get('/', userMustBeHR, async (req, res) => {
+Router.get('/', userMustBeAdmin, async (req, res) => {
   try {
     // validating query params
     const currentYear = moment().get('year');
@@ -205,8 +205,6 @@ Router.post('/', bodyMustNotEmpty, async (req, res) => {
     entity.fToDT = moment.utc(fToDT).toDate();
     const leaveLetter = await leaveLetterModel.add(entity);
 
-    console.log('lL', leaveLetter);
-
     //Send email
     let { fInformTo } = entity;
     console.log(`LeaveLetter Controller -> req Entities`, entity);
@@ -240,8 +238,8 @@ Router.patch('/', bodyMustNotEmpty, async (req, res) => {
     const entity = standardizeObj(req.body.info);
     const { fUserId } = entity;
     const userId = getIdFromToken(req.token_payload);
-    // only HR can update everyone's
-    if (fUserType !== 'HR' && userId !== fUserId) throw { code: 401, msg: 'NO_PERMISSION' };
+    // only Admin can update everyone's
+    if (fUserType !== 'Admin' && userId !== fUserId) throw { code: 401, msg: 'NO_PERMISSION' };
 
     const fId = req.body.id;
     if (!entity || Object.keys(entity).length < 1 || !fId) throw { msg: 'INVALID_VALUES' };
@@ -274,8 +272,8 @@ Router.get('/my-letters', async (req, res) => {
     const demandUserId = req.query.userId;
     if (!userId || !demandUserId) throw { msg: 'USER_NOT_FOUND' };
     const userType = await getPermissionByToken(req.token_payload);
-    // only HR can view all; others can view oneself's
-    if(userId !== demandUserId && userType !== 'HR') throw { code: 401, msg: 'NO_PERMISSION' };
+    // only Admin can view all; others can view oneself's
+    if(userId !== demandUserId && userType !== 'Admin') throw { code: 401, msg: 'NO_PERMISSION' };
 
     let { page = DEFAULT_PAGE_ORDER, size = DEFAULT_PAGE_SIZE } = req.query;
     if(page < 1 || isNaN(page)) page = DEFAULT_PAGE_ORDER;
@@ -349,9 +347,9 @@ Router.get('/filter', async (req, res) => {
     if(isNaN(status) || !ALLOWED_STATUS.includes(+status)) status = DEFAULT_STATUS;
     if(!validatingQueryParams({ fromMonth, toMonth, fromYear, toYear })) throw { msg: 'INVALID_QUERY' };
       
-    // only HR can export all; others can export oneself's
+    // only Admin can export all; others can export oneself's
     const fUserType = await getPermissionByToken(req.token_payload);
-    if(fUserType !== 'HR' && userId !== getIdFromToken(req.token_payload)) throw { code: 401, msg: 'NO_PERMISSION' };
+    if(fUserType !== 'Admin' && userId !== getIdFromToken(req.token_payload)) throw { code: 401, msg: 'NO_PERMISSION' };
 
     const toDate = new Date(`${toMonth}/${toDay}/${toYear}`);
     const fromDate = new Date(`${fromMonth}/${fromDay}/${fromYear}`);
@@ -462,12 +460,12 @@ Router.post('/send-email', async (req, res) => {
 Router.get('/used-off-days', async (req, res) => {
   try {
     let { userId, month, year } = req.query;
-    // only HR can view all; others can view oneself's
+    // only Admin can view all; others can view oneself's
     const fUserType = await getPermissionByToken(req.token_payload);
-    if(fUserType !== 'HR' && userId !== getIdFromToken(req.token_payload)) throw { code: 401, msg: 'NO_PERMISSION' };
+    if(fUserType !== 'Admin' && userId !== getIdFromToken(req.token_payload)) throw { code: 401, msg: 'NO_PERMISSION' };
 
     if(!userId || 
-      (await getPermissionByToken(req.token_payload) !== 'HR' && 
+      (await getPermissionByToken(req.token_payload) !== 'Admin' && 
       userId !== getIdFromToken(req.token_payload))) throw { msg: 'INVALID_QUERY' };
     if(isNaN(month) || ![...Array(12).keys()].includes(+month - 1)) month = 12;
     if(isNaN(year) || (year > moment().get('year') || year < 2000)) year = moment().get('year');
