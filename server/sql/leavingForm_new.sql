@@ -16,6 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `SequelizeMeta`
+--
+
+DROP TABLE IF EXISTS `SequelizeMeta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SequelizeMeta` (
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`name`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `SequelizeMeta`
+--
+
+LOCK TABLES `SequelizeMeta` WRITE;
+/*!40000 ALTER TABLE `SequelizeMeta` DISABLE KEYS */;
+INSERT INTO `SequelizeMeta` VALUES ('20190904041603-create-booking.js');
+/*!40000 ALTER TABLE `SequelizeMeta` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `absenceTypes`
 --
 
@@ -37,6 +61,35 @@ LOCK TABLES `absenceTypes` WRITE;
 /*!40000 ALTER TABLE `absenceTypes` DISABLE KEYS */;
 INSERT INTO `absenceTypes` VALUES (1,'Việc riêng'),(2,'Nghỉ phép năm'),(3,'Nghỉ ốm'),(4,'Nghỉ chế độ');
 /*!40000 ALTER TABLE `absenceTypes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `bookings`
+--
+
+DROP TABLE IF EXISTS `bookings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `bookings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fBookingName` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `fBookingDate` datetime NOT NULL,
+  `fStartTime` datetime NOT NULL,
+  `fEndTime` datetime NOT NULL,
+  `users_fId` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `bookings`
+--
+
+LOCK TABLES `bookings` WRITE;
+/*!40000 ALTER TABLE `bookings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `bookings` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -207,7 +260,7 @@ CREATE TABLE `userPermission` (
 
 LOCK TABLES `userPermission` WRITE;
 /*!40000 ALTER TABLE `userPermission` DISABLE KEYS */;
-INSERT INTO `userPermission` VALUES ('1J85n','Admin'),('3sVfP','Personnel'),('CdkR0','Supper Admin'),('NH6Bs','HR');
+INSERT INTO `userPermission` VALUES ('1J85n','Admin'),('3sVfP','Personnel'),('CdkR0','Supper Admin'),('NH6Bs','Human Resource');
 /*!40000 ALTER TABLE `userPermission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -236,7 +289,7 @@ CREATE TABLE `userRefToken` (
 
 LOCK TABLES `userRefToken` WRITE;
 /*!40000 ALTER TABLE `userRefToken` DISABLE KEYS */;
-INSERT INTO `userRefToken` VALUES ('H8UIAdsy7T','xK2Pww9chNnebSEEsQCLQzqqVu6h6kriXL7GX558ierXJKJYM8VKnd6G77ltBKYvgJSZ8BOoQ7LQYFxu','2019-03-19 08:20:34',NULL);
+INSERT INTO `userRefToken` VALUES ('5g3bqeTgu6','azmX89fDd0WDn8k3saDiJ9gI4BzPSTxZI6KauKg6wZD62YpsC5c8KQz1gkGbjoP6IPGNsBCc9Buljlw6','2019-11-21 11:45:22',NULL),('eAVJCmA07M','WzZMyxjyTgl1WCHP52jchm1cBU3f9BiyUEBaZCmLqEHamHgSDFCuGprcRfj3gkPlgGrOzOjkY5L877Mj','2019-11-21 12:01:04',NULL),('H8UIAdsy7T','xK2Pww9chNnebSEEsQCLQzqqVu6h6kriXL7GX558ierXJKJYM8VKnd6G77ltBKYvgJSZ8BOoQ7LQYFxu','2019-03-19 08:20:34',NULL);
 /*!40000 ALTER TABLE `userRefToken` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -281,7 +334,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('4r5dtH76nj','User','GO','fbd79','0123456789','4c839','3sVfP','user@go.testor',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','userGO',NULL,NULL,NULL),('5g3bqeTgu6','Admin','GO','2d61d','0123456789','2d61d','NH6Bs','nhansuHR1@go.com',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','admin',NULL,NULL,NULL);
+INSERT INTO `users` VALUES ('4r5dtH76nj','User','GO','fbd79','0123456789','4c839','3sVfP','user@go.testor',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','user@go.testor',NULL,NULL,NULL),('5g3bqeTgu6','Admin','GO','fbd79','0123456789','2d61d','1J85n','admin@goldenowl.asia',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','admin@goldenowl.asia',NULL,NULL,NULL),('eAVJCmA07M','GO Dev','JavaScript','7e069','123456789','ae0cb','3sVfP','godevjs@mail',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','godevjs@mail','7e069','3sVfP','ae0cb'),('IrcGyyQtZg','GO Lead','JavaScript','fbd79','123456789','ae0cb','3sVfP','goleadjs@mail',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','goleadjs@mail','fbd79','3sVfP','ae0cb');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -294,4 +347,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-11-21 15:30:11
+-- Dump completed on 2019-11-22  9:33:48
