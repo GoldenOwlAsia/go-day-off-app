@@ -4,7 +4,7 @@ import { getPermissionByToken } from "../helpers/getUserInfo";
 module.exports = async (req, res, next) => {
   try {
     const fUserType = await getPermissionByToken(req.token_payload);
-    if (fUserType === "HR") next();
+    if (fUserType === "Admin") next();
     else throw { code: 401, msg: "NO_PERMISSION" };
   }
   catch(err) {

@@ -33,13 +33,13 @@ const {
 /**
  * Middlewares
  */
-const userMustBeHR = require('../../middlewares/userMustBeHR');
+const userMustBeAdmin = require('../../middlewares/userMustBeAdmin');
 const bodyMustNotEmpty = require('../../middlewares/bodyMustNotEmpty');
 
 /**
  * ADD NEW User
  */
-Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeHR, async (req, res) => {
+Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeAdmin, async (req, res) => {
   try {
     const userId = getIdFromToken(req.token_payload);
     if (!userId) throw { msg: 'USER_NOT_FOUND' };
