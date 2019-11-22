@@ -22,7 +22,7 @@ const styles = theme => ({
 
 const LetterCancelingDialogWithFormik = (props) => {
   const { classes, title, open, contentText, onClose, onConfirm, value, field, form} = props;
-  const isEnableSendButton = !!Object.keys(form.errors).length;
+  const isDisableSendButton = !!Object.keys(form.errors).length;
 
   return (
     <Dialog
@@ -65,7 +65,7 @@ const LetterCancelingDialogWithFormik = (props) => {
           color="primary"
           variant="contained"
           className={classes.button}
-          disabled={!isEnableSendButton}
+          disabled={isDisableSendButton}
           onClick={() => onConfirm && onConfirm(form)}
         >
           Send
