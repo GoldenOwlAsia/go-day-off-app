@@ -50,7 +50,7 @@ if (process.env.NODE_ENV === "development") {
  * Middlewares/Helpers
  */
 const { verifyAccToken } = require("./helpers/jwt");
-const userMustBeHR = require("./middlewares/userMustBeHR");
+const userMustBeAdmin = require("./middlewares/userMustBeAdmin");
 
 /**
  * Controllers
@@ -79,7 +79,7 @@ API_VERSIONS.forEach(version => {
   server.use(`/api/${version}/reject`, verifyAccToken, rejectCtrl);
   // --
   const settingCtrl = require(`./controllers/${version}/setting`);
-  server.use(`/api/${version}/setting`, verifyAccToken, userMustBeHR, settingCtrl);
+  server.use(`/api/${version}/setting`, verifyAccToken, userMustBeAdmin, settingCtrl);
   // --
   const publicSettingCtrl = require(`./controllers/${DEFAULT_API_VERSION}/setting-public`);
   server.use(`/api/${version}/public/setting`, verifyAccToken, publicSettingCtrl);
@@ -111,7 +111,7 @@ const rejectCtrl = require(`./controllers/${DEFAULT_API_VERSION}/reject`);
 server.use(`/api/reject`, verifyAccToken, rejectCtrl);
 // --
 const settingCtrl = require(`./controllers/${DEFAULT_API_VERSION}/setting`);
-server.use(`/api/setting`, verifyAccToken, userMustBeHR, settingCtrl);
+server.use(`/api/setting`, verifyAccToken, userMustBeAdmin, settingCtrl);
 // --
 const publicSettingCtrl = require(`./controllers/${DEFAULT_API_VERSION}/setting-public`);
 server.use(`/api/public/setting`, verifyAccToken, publicSettingCtrl);
