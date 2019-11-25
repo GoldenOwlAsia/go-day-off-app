@@ -171,7 +171,7 @@ class AbsenceLetterWithFormik extends React.Component {
       this.__isMounted && this.setState({ usedDayOff });
     }).catch(err => {
       if (err.message !== USER_LEFT_PAGE) 
-        this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Used Day-off'!`);
+      (this.__isMounted && this.props.handleShowNotif) && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Used Day-off'!`);
     });
 
     getDayOffSetting(this.cancelSource.token)
@@ -185,7 +185,7 @@ class AbsenceLetterWithFormik extends React.Component {
       })
     .catch(err => {
       if (err.message !== USER_LEFT_PAGE) 
-        this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Day-off Setting'!`);
+      (this.__isMounted && this.props.handleShowNotif) && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Day-off Setting'!`);
     });
   }
 
