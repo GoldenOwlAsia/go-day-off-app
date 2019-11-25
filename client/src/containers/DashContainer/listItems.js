@@ -22,6 +22,9 @@ const styles = theme => ({
   },
   selectedLink: {
     backgroundColor: 'rgba(0, 0, 0, 0.08)'
+  },
+  icon: {
+    marginRight: '4px'
   }
 });
 
@@ -35,7 +38,7 @@ const PersonnelListItems = props => {
       <br />
       <Link to="/" className={classes.undecoratedLink}>
         <ListItem button className={isSelectedLink(history, '/', classes)}>
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <DashboardIcon />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
@@ -46,7 +49,7 @@ const PersonnelListItems = props => {
           button
           className={isSelectedLink(history, '/leave-request/create', classes)}
         >
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <SendIcon />
           </ListItemIcon>
           <ListItemText primary="Create leave letter" />
@@ -57,7 +60,7 @@ const PersonnelListItems = props => {
           button
           className={isSelectedLink(history, '/my-letters', classes)}
         >
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <HistoryIcon />
           </ListItemIcon>
           <ListItemText primary="My letters" />
@@ -105,7 +108,7 @@ const HRListItems = props => {
           button
           className={isSelectedLink(history, '/leave-requests', classes)}
         >
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <EmailIcon />
           </ListItemIcon>
           <ListItemText primary="List all letters" />
@@ -119,7 +122,7 @@ const HRListItems = props => {
           button
           className={isSelectedLink(history, '/create-user', classes)}
         >
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <PersonAddIcon />
           </ListItemIcon>
           <ListItemText primary="Create user" />
@@ -130,7 +133,7 @@ const HRListItems = props => {
           button
           className={isSelectedLink(history, '/users-management', classes)}
         >
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <PersonIcon />
           </ListItemIcon>
           <ListItemText primary="List all users" />
@@ -144,7 +147,7 @@ const HRListItems = props => {
           button
           className={isSelectedLink(history, '/setting', classes)}
         >
-          <ListItemIcon>
+          <ListItemIcon className={classes.icon}>
             <SettingIcon />
           </ListItemIcon>
           <ListItemText primary="Settings" />

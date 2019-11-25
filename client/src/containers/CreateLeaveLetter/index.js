@@ -253,7 +253,7 @@ class AbsenceLetterWithFormik extends React.Component {
                 return (
                   <Form>
                     {/* Top buttons */}
-                    <React.Fragment>
+                    {/* <React.Fragment>
                       <Grid
                         item
                         container
@@ -301,7 +301,7 @@ class AbsenceLetterWithFormik extends React.Component {
                           )}
                         />
                       </Grid>
-                    </React.Fragment>
+                    </React.Fragment> */}
                     {/* End - Top buttons  */}
                     <React.Fragment>
                       <Typography
@@ -676,16 +676,16 @@ const styles = theme => ({
       padding: theme.spacing.unit * 3
     }
   },
-  buttonGroupTop: {
-    justifyContent: 'flex-start',
-    marginBottom: theme.spacing.unit * 3,
-    [theme.breakpoints.down('xs')]: {
-      display: 'none'
-    },
-    [theme.breakpoints.up('sm')]: {
-      display: 'flex'
-    }
-  },
+  // buttonGroupTop: {
+  //   justifyContent: 'flex-start',
+  //   marginBottom: theme.spacing.unit * 3,
+  //   [theme.breakpoints.down('xs')]: {
+  //     display: 'none'
+  //   },
+  //   [theme.breakpoints.up('sm')]: {
+  //     display: 'flex'
+  //   }
+  // },
   linkRequestBottom: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -699,14 +699,15 @@ const styles = theme => ({
     color: '#000',
   },
   buttonGroupBottom: {
+    display: 'flex',
     justifyContent: 'flex-end',
     marginTop: theme.spacing.unit * 3,
-    [theme.breakpoints.up('sm')]: {
-      display: 'none'
-    },
-    [theme.breakpoints.down('xs')]: {
-      display: 'flex'
-    }
+    // [theme.breakpoints.up('sm')]: {
+    //   display: 'none'
+    // },
+    // [theme.breakpoints.down('xs')]: {
+    //   display: 'flex'
+    // }
   },
   button: {
     marginLeft: theme.spacing.unit,
