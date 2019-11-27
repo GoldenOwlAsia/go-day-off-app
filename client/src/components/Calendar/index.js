@@ -101,7 +101,7 @@ class Calendar extends React.Component {
     const letters = res.data.leaveLetters;
 
     const events = letters.map(letter => {
-      const backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      const backgroundColor = letter.fStatus === 1 ? '#ffe43a': letter.fStatus === 2 ? '#0eba25' : '#ff0000';
       const textColor = 'white'
 
       return {
@@ -139,7 +139,7 @@ class Calendar extends React.Component {
     const adminLetters = res.data.leaveLetters.filter(letter => !events.find(e => e.id === letter.fId));
 
     adminLetters.map(letter => {
-      const backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      const backgroundColor = letter.fStatus === 1 ? '#ffe43a': letter.fStatus === 2 ? '#0eba25' : '#ff0000';
       const textColor = 'white'
 
       const event = {
@@ -160,14 +160,12 @@ class Calendar extends React.Component {
   
   render() {
     return (
-      <div style={{ borderTop: '4px solid #fac863', borderBottom: '4px solid #fac863', paddingTop: '20px' }}>
+      <div style={{ borderTop: '4px solid #ffe43a', borderBottom: '4px solid #ffe43a', paddingTop: '20px' }}>
         <FullCalendar 
           themeSystem='lux' 
           defaultView="dayGridMonth" 
           plugins={[dayGridPlugin]} 
           events={this.state.events}
-          // eventColor={'#fac863'}
-          // eventTextColor={'black'}
           eventClick={this.onEventClick}
           datesRender={this.viewRender}
         />
