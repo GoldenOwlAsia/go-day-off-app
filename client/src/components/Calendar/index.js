@@ -86,14 +86,18 @@ class Calendar extends React.Component {
     const { selectedDate } = this.state;
     const selectedMonth = selectedDate.month() + 1;
     const selectedYear = selectedDate.year();
+    const nextSelectedDate = moment(selectedDate).add(1, 'month');
+    const nextSelectedMonth = nextSelectedDate.month() + 1;
+    const nextSelectedYear = nextSelectedDate.year();
+
     const filterData = {
       userId: getUserId(),
       fromDay: 1,
       fromMonth: selectedMonth,
       fromYear: selectedYear,
-      toDay: selectedDate.endOf('months').date(),
-      toMonth: selectedMonth,
-      toYear: selectedYear,
+      toDay: 1,
+      toMonth: nextSelectedMonth,
+      toYear: nextSelectedYear,
       size: 0,
     }
 
@@ -101,7 +105,7 @@ class Calendar extends React.Component {
     const letters = res.data.leaveLetters;
 
     const events = letters.map(letter => {
-      const backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      const backgroundColor = letter.fStatus === 1 ? '#ffe43a': letter.fStatus === 2 ? '#0eba25' : '#ff0000';
       const textColor = 'white'
 
       return {
@@ -115,31 +119,20 @@ class Calendar extends React.Component {
       }
     })
 
-    isAdmin ? this.setAdminEvents(events) : this.setState({ events });
+    isAdmin ? this.setAdminEvents(events, filterData) : this.setState({ events });
   }
 
-  setAdminEvents = async (events) => {
+  setAdminEvents = async (events, filterData) => {
     const { cancelSource } = this;
-    const { selectedDate } = this.state;
-    const selectedMonth = selectedDate.month() + 1;
-    const selectedYear = selectedDate.year();
 
-    const adminFilterData = {
-      fromDay: 1,
-      fromMonth: selectedMonth,
-      fromYear: selectedYear,
-      toDay: selectedDate.endOf('months').date(),
-      toMonth: selectedMonth,
-      toYear: selectedYear,
-      size: 0,
-    };
-
-    const res = await getAllLetterByFilter(cancelSource.token, adminFilterData);
+    delete filterData.userId;
+    
+    const res = await getAllLetterByFilter(cancelSource.token, filterData);
 
     const adminLetters = res.data.leaveLetters.filter(letter => !events.find(e => e.id === letter.fId));
 
     adminLetters.map(letter => {
-      const backgroundColor = letter.fStatus === 1 ? '#fac863': letter.fStatus === 2 ? '#32CC32' : '#FF000D';
+      const backgroundColor = letter.fStatus === 1 ? '#ffe43a': letter.fStatus === 2 ? '#0eba25' : '#ff0000';
       const textColor = 'white'
 
       const event = {
@@ -160,14 +153,12 @@ class Calendar extends React.Component {
   
   render() {
     return (
-      <div style={{ borderTop: '4px solid #fac863', borderBottom: '4px solid #fac863', paddingTop: '20px' }}>
+      <div style={{ borderTop: '4px solid #ffe43a', borderBottom: '4px solid #ffe43a', paddingTop: '20px' }}>
         <FullCalendar 
           themeSystem='lux' 
           defaultView="dayGridMonth" 
           plugins={[dayGridPlugin]} 
           events={this.state.events}
-          // eventColor={'#fac863'}
-          // eventTextColor={'black'}
           eventClick={this.onEventClick}
           datesRender={this.viewRender}
         />

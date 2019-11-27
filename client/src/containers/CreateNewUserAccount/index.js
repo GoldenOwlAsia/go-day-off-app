@@ -167,6 +167,7 @@ class CreateNewAccount extends React.Component {
                     `Created new account successfully!`
                   );
                   actions.setSubmitting(false);
+                  actions.resetForm(initialValues);
                 })
                 .catch(err => {
                   handleShowNotif(

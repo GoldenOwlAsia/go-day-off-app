@@ -34,7 +34,7 @@ import { getUserEntity } from '../../helpers/authHelpers';
 import { getUserTypeFromCookie } from '../../helpers/getUserInfo';
 
 
-const drawerWidth = 240;
+const drawerWidth = 210;
 
 const styles = theme => ({
   root: {
@@ -67,7 +67,8 @@ const styles = theme => ({
     })
   },
   menuButton: {
-    marginLeft: 12,
+    marginLeft: 0,
+    // 12,
     marginRight: 12
   },
   menuButtonHidden: {
@@ -97,9 +98,9 @@ const styles = theme => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen
     }),
-    width: theme.spacing.unit * 7,
+    width: theme.spacing.unit * 6,
     [theme.breakpoints.up('sm')]: {
-      width: theme.spacing.unit * 9
+      width: theme.spacing.unit * 7
     }
   },
   appBarSpacer: theme.mixins.toolbar,
