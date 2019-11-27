@@ -86,14 +86,18 @@ class Calendar extends React.Component {
     const { selectedDate } = this.state;
     const selectedMonth = selectedDate.month() + 1;
     const selectedYear = selectedDate.year();
+    const nextSelectedDate = moment(selectedDate).add(1, 'month');
+    const nextSelectedMonth = nextSelectedDate.month() + 1;
+    const nextSelectedYear = nextSelectedDate.year();
+
     const filterData = {
       userId: getUserId(),
       fromDay: 1,
       fromMonth: selectedMonth,
       fromYear: selectedYear,
-      toDay: selectedDate.endOf('months').date(),
-      toMonth: selectedMonth,
-      toYear: selectedYear,
+      toDay: 1,
+      toMonth: nextSelectedMonth,
+      toYear: nextSelectedYear,
       size: 0,
     }
 
@@ -115,26 +119,15 @@ class Calendar extends React.Component {
       }
     })
 
-    isAdmin ? this.setAdminEvents(events) : this.setState({ events });
+    isAdmin ? this.setAdminEvents(events, filterData) : this.setState({ events });
   }
 
-  setAdminEvents = async (events) => {
+  setAdminEvents = async (events, filterData) => {
     const { cancelSource } = this;
-    const { selectedDate } = this.state;
-    const selectedMonth = selectedDate.month() + 1;
-    const selectedYear = selectedDate.year();
 
-    const adminFilterData = {
-      fromDay: 1,
-      fromMonth: selectedMonth,
-      fromYear: selectedYear,
-      toDay: selectedDate.endOf('months').date(),
-      toMonth: selectedMonth,
-      toYear: selectedYear,
-      size: 0,
-    };
-
-    const res = await getAllLetterByFilter(cancelSource.token, adminFilterData);
+    delete filterData.userId;
+    
+    const res = await getAllLetterByFilter(cancelSource.token, filterData);
 
     const adminLetters = res.data.leaveLetters.filter(letter => !events.find(e => e.id === letter.fId));
 
