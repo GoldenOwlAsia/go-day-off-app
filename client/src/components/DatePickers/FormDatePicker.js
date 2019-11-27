@@ -13,6 +13,11 @@ import { DATETIME_FORMAT_1, DATETIME_LOCALE_EN } from '../../constants/form';
 moment.locale(DATETIME_LOCALE_EN);
 
 class DatePickerField extends React.Component {
+
+  disableWeekend = (date) => {
+    return date.day() === 0 || date.day() === 6;
+  }
+
   render() {
     const {
       field,
@@ -38,6 +43,7 @@ class DatePickerField extends React.Component {
           format={DATETIME_FORMAT_1}
           error={Boolean(currentError)}
           minDate={minDate && minDate}
+          shouldDisableDate={this.disableWeekend}
           onChange={date => form.setFieldValue(field.name, date, true)}
           onError={(_, error) => form.setFieldError(field.name, error)}
           {...otherProps}

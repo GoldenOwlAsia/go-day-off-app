@@ -162,6 +162,7 @@ class Calendar extends React.Component {
           defaultView="dayGridMonth" 
           plugins={[dayGridPlugin]} 
           events={this.state.events}
+          weekends={false}
           eventClick={this.onEventClick}
           datesRender={this.viewRender}
         />
