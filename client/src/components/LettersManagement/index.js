@@ -1,41 +1,39 @@
 import moment from 'moment-timezone';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { withRouter } from "react-router-dom";
 import React, { Component, Fragment } from 'react';
 import MUIDataTable from 'mui-datatables';
-import ExcelExporter from './ExcelExporter';
+// import ExcelExporter from './ExcelExporter';
 import { Typography, Button, withStyles } from '@material-ui/core';
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
-
-
 import { CancelToken } from 'axios';
 /**
  * Constants
  */
-import { letterColors, letterStatusText, dayOfWeek, defaultColumns, HRColumns, defaultExportColumns, HRExportColumns } from "../constants/letter";
-import { REJECT_TYPE } from '../constants/rejectType'; 
-import { userTypes } from '../constants/permission';
+import { letterColors, letterStatusText, dayOfWeek, defaultColumns, AdminColumns, defaultExportColumns, AdminExportColumns } from "../../constants/letter";
+import { REJECT_TYPE } from '../../constants/rejectType'; 
+import { userTypes } from '../../constants/permission';
 
 // Components
-import LetterManagementToolbar from './LetterManagementToolbar';
+import LetterManagementToolbar from '../LetterManagementToolbar';
 
 /**
  * Helpers 
  */
-import { getUserId } from '../helpers/authHelpers';
-import { formatRow } from "../helpers/excelFormatter";
+import { getUserId } from '../../helpers/authHelpers';
+import { formatRow } from "../../helpers/excelFormatter";
 
 
 // Notification redux
 import {
   showNotification,
-} from '../redux/actions/notificationActions';
-import { NOTIF_ERROR, NOTIF_SUCCESS } from '../constants/notification';
+} from '../../redux/actions/notificationActions';
+import { NOTIF_ERROR, NOTIF_SUCCESS } from '../../constants/notification';
 
 // letterFilter redux
 import {
   letterFilterChangeAll
-} from '../redux/actions/letterFilterActions';
+} from '../../redux/actions/letterFilterActions';
 
 //overrides theme
 const materialTheme = createMuiTheme({
@@ -46,6 +44,10 @@ const materialTheme = createMuiTheme({
       },
       actions: {
         flex: '2',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',      
+        flexDirection: 'row-reverse',
       }
     },
     MuiFormControl: {
@@ -53,10 +55,14 @@ const materialTheme = createMuiTheme({
         width: '135px',
         margin: '0 5px 0 0 !important',
       }
-    }
+    },
+    MuiTableRow: {
+      root: {
+        cursor: 'pointer',
+      }
+    },
   }
 })
-
 
 const getDate = (rawDate = '') => {
   const date = moment(rawDate).isValid() && moment.tz(rawDate, 'Asia/Bangkok');
@@ -75,9 +81,9 @@ class LetterManagement extends Component {
       letters: [],
       exports: []
     };
-    this.downloadTriggerRef = React.createRef();
+    this.downloadTriggerRef = React.createRef(); 
   }
-  
+
   componentDidMount = () => {
     this.__isMounted = true;
     this.cancelSource = CancelToken.source();
@@ -168,24 +174,6 @@ class LetterManagement extends Component {
     }
   }
 
-  handleExport = async () => {
-    try {
-      const { data: { success, leaveLetters: exports }
-      } = await this.props.api(this.cancelSource.token, 0); // get all
-      if (success) 
-        this.__isMounted && this.setState({ exports }, () => {
-          this.downloadTriggerRef.current.click();
-          this.__isMounted 
-          && this.setState(
-            { exports: [] }, // release memory
-            () => this.props.handleShowNotif(NOTIF_SUCCESS, `Data export completed!`));
-        });
-    }
-    catch(err) {
-      this.props.handleShowNotif(NOTIF_ERROR, `Data export failed! (${err.message})`)
-    }
-  };
-
   handleChangePage = (size = 10, page = 1, demandUserId) => {
     this.props.api(this.cancelSource.token, page, size, demandUserId)
     .then(({ data: { success, leaveLetters: letters, count } }) => 
@@ -245,34 +233,24 @@ class LetterManagement extends Component {
     const handleChangePageFunc = this.props.filterValues !== undefined ? this.handleChangPageWithFilter : this.handleChangePage;
 
     const tableInfo = {
-      columns: type === userTypes.MODE_ADMIN ? HRColumns : defaultColumns,
+      columns: type === userTypes.MODE_ADMIN ? AdminColumns : defaultColumns,
       title: <Typography component='p' variant='h5' className={classes.title}> {title} </Typography>,
       data: Array.isArray(letters)
-        ? letters.map(({ fUserFullName, fFromDT, fToDT, fStatus, fId, fRdt, fRejectType }) => {
+        ? letters.map(({ fUserFullName, fFromDT, fFromOpt, fToDT, fToOpt, fStatus, fId, fRdt, fRejectType }) => {
           const dataSet = [
+            fId,
             getDate(fRdt),
             getDate(fFromDT),
             getDate(fToDT),
-            <span style={{ color: letterColors[fStatus] }} >
-                  { fRejectType && fRejectType === REJECT_TYPE.BY_SELF? `CANCELED` : letterStatusText[fStatus]  }
-                </span>,
-            <Link
-              to={`/leave-request/${fId}`}
-              className={classes.btnLink}
-            >
-              <Button variant='contained' color='primary'>
-                Details
-              </Button>
-            </Link>
+            fRejectType && fRejectType === REJECT_TYPE.BY_SELF? `CANCELED` : letterStatusText[fStatus],
           ];
-          if (type === userTypes.MODE_ADMIN) dataSet.unshift(fUserFullName || 'Unknown');
+          if (type === userTypes.MODE_ADMIN) dataSet.splice(1, 0, fUserFullName || 'Unknown');
           return dataSet;
         }) : [],
       options: {
         print: false,
         filter: false,
         search: false,
-        download: false,
         serverSide: true,
         viewColumns: false,
         responsive: 'scroll',
@@ -280,6 +258,10 @@ class LetterManagement extends Component {
         count: this.state.count,
         rowsPerPage: this.state.size,
         rowsPerPageOptions: [5, 10, 15, 20],
+        onRowClick: rowData => {
+          const { history } = this.props;
+          history.push(`/leave-request/${rowData[0]}`)
+        },
         onChangeRowsPerPage: size => handleChangePageFunc(size, 1, demandUserId),
         onTableChange: (action, tableState) => {
           action === 'changePage' && handleChangePageFunc(tableState.rowsPerPage, tableState.page + 1, demandUserId)
@@ -288,37 +270,27 @@ class LetterManagement extends Component {
           return (
             <LetterManagementToolbar
               filterValues={this.props.filterValues}
-              onExport={this.handleExport}
               onFilterValueChange={this.handleFilterValueChange}
             />
           )
         },
+        download: true,
+        downloadOptions: { 
+          filename: `LEAVING_FORM_EXPORTS_${moment().locale('vi').format("DD-MM-YYYY_hh-mm-ss")}.csv`,
+          filterOptions: {
+            useDisplayedColumnsOnly: true,
+          }
+       },
+        // setTableProps: () => {
+        //   return {
+        //     style: {
+        //       color: 'rgba(0, 0, 0, 0.50)',
+        //       fontWeight: 'bold',
+        //     }
+        //   }
+        // }
       }
     };
-
-    const sheets =  [
-      {
-        dataSet: [{
-          columns:
-            type === userTypes.MODE_ADMIN
-              ? HRExportColumns
-              : defaultExportColumns,
-          data: exports.map(({ fUserFullName, fApproverFullName,
-            fSubstituteFullName, fFromDT, fToDT, fFromOpt, fToOpt, fStatus, fRdt, fRejectType }) => {
-            const row = [
-              { value: getDate(fRdt) },
-              { value: `${getDate(fFromDT)} (${fFromOpt})` },
-              { value: `${getDate(fToDT)} (${fToOpt})` },
-              { value: fApproverFullName },
-              { value: fSubstituteFullName },
-              { value: fRejectType && fRejectType === REJECT_TYPE.BY_SELF? `CANCELED` : letterStatusText[fStatus] },
-            ];
-            if(type === userTypes.MODE_ADMIN) row.unshift({ value: fUserFullName });
-            return formatRow(row);
-          })
-        }],
-      }
-    ];
 
     return (
       <Fragment>
@@ -331,7 +303,6 @@ class LetterManagement extends Component {
             options={tableInfo.options}
           />
         </MuiThemeProvider>
-        <ExcelExporter sheets={sheets} downloadTriggerRef={this.downloadTriggerRef}/>
       </Fragment>
     );
   }
@@ -369,6 +340,6 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(
   withStyles(styles)(LetterManagement)
-);
+));

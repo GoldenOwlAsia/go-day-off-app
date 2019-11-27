@@ -11,7 +11,7 @@ const generateInitialValue = () => {
    return {
     status: 0,
     fromDate: new Date(currentDate.getFullYear(), 0, 1), //first date of first month
-    toDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59), //last day of current month
+    toDate: new Date(currentDate.getFullYear(), 12, 0, 23, 59, 59), //last day of 12
   }
 }
 

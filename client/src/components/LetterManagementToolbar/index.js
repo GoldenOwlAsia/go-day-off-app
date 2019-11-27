@@ -3,7 +3,7 @@ import { Formik, Field, Form } from 'formik';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import {
-  Button,
+  IconButton,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -90,19 +90,21 @@ class LetterManagementToolbar extends React.Component {
                   />
                 )}
               />
-              <Button 
+              {/* <Button 
                 size="small" 
                 color='primary'
                 variant="contained"
                 disabled={isSubmitting}
                 className={`${classes.button} py-2`}
                 onClick={handleSubmit}
-              >
-                <SearchIcon className={classNames(classes.leftIcon, classes.iconSmall)} />
-                Search
-              </Button>
+              > */} 
+              <IconButton onClick={handleSubmit} className={classes.button} title='Search' >
+                <SearchIcon />
+              </IconButton>
+                {/* Search */}
+              {/* </Button> */}
             {/* Button export */}
-              <Button 
+              {/* <Button 
                 size='small'
                 title='Export data'
                 variant='contained'
@@ -112,7 +114,7 @@ class LetterManagementToolbar extends React.Component {
               >
                 <CloudDownLoadIcon className={classNames(classes.iconSmall, classes.leftIcon)} >save</CloudDownLoadIcon>
                 Export
-              </Button> 
+              </Button>  */}
             </Form>
           )
         }
@@ -135,17 +137,22 @@ const styles = theme => ({
     alignItems: 'center',
   },
   iconSmall: {
-    fontSize: 20,
-  },
-  leftIcon: {
-    marginRight: theme.spacing.unit,
+    fontSize: '1.5rem',
   },
   button: {
-    marginRight: theme.spacing.unit,
-    [theme.breakpoints.down('md')]: {
-      marginTop: '5px'
+    flex: '0 0 auto',
+    color: 'rgba(0, 0, 0, 0.54)',
+    padding: '12px',
+    overflow: 'visible',
+    fontSize: '1.5rem',
+    textAlign: 'center',
+    transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+    borderRadius: '50%',
+    '&:hover': {
+      color: '#3f51b5',
+    }
     }
   }
-});
+);
 
 export default withStyles(styles)(LetterManagementToolbar);
