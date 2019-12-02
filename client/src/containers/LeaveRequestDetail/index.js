@@ -24,6 +24,7 @@ import {
 //components
 import RequestStatusPill from '../../components/RequestStatusPill';
 import LetterCancelingDialog from '../../components/Dialogs/LetterCancelingDialog';
+import ConfirmButton from './ConfirmButton'
 
 //containers
 import DashContainer from '../DashContainer';
@@ -354,7 +355,8 @@ class LeaveRequestDetail extends React.Component {
                           <React.Fragment>
                             <Field
                             render={({ field, form }) => (
-                              <Button
+                              <ConfirmButton
+                                onAgree={() => this.handleApprove(form)}
                                 className={classNames(
                                   classes.button,
                                   classes.btnApprove
@@ -362,12 +364,11 @@ class LeaveRequestDetail extends React.Component {
                                 size="small"
                                 variant="contained"
                                 color="primary"
-                                onClick={() => this.handleApprove(form)}
                                 disabled={isSubmitting}
                               >
                                 <DoneIcon />
                                 Approve
-                              </Button>
+                              </ConfirmButton>
                             )}
                           />
                           <Field
