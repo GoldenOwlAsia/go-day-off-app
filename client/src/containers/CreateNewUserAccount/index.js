@@ -75,7 +75,8 @@ const styles = theme => ({
     justifyContent: 'flex-end',
     marginTop: theme.spacing.unit * 6,
     [theme.breakpoints.up('sm')]: {
-      display: 'none'
+      display: 'flex',
+      justifyContent: 'flex-end',
     },
     [theme.breakpoints.down('xs')]: {
       display: 'flex'
@@ -191,7 +192,7 @@ class CreateNewAccount extends React.Component {
               return (
                 <Form>
                   {/* Top buttons */}
-                  <React.Fragment>
+                  {/* <React.Fragment>
                     <Grid
                       item
                       container
@@ -233,7 +234,7 @@ class CreateNewAccount extends React.Component {
                         )}
                       />
                     </Grid>
-                  </React.Fragment>
+                  </React.Fragment> */}
                   {/* End - Top buttons */}
                   <React.Fragment>
                     <Typography
