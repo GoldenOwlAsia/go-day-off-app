@@ -47,12 +47,13 @@ import ValidationSchema from './validationSchema';
 import Axios, { CancelToken } from 'axios';
 import { getAllTeams, getAllPositions } from '../../apiCalls/supportingAPIs';
 import { getProfile, updateProfile } from '../../apiCalls/userAPIs';
-import { getMyLeaveLetters, getUsedDayOff, getDemandLetterByFilter } from "../../apiCalls/leaveLetterAPI";
+import { getMyLeaveLetters, getDemandLetterByFilter } from "../../apiCalls/leaveLetterAPI";
+import { getDayOff } from '../../apiCalls/userAPIs';
+import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
 //Notif redux
 import { NOTIF_ERROR, NOTIF_SUCCESS, USER_LEFT_PAGE } from '../../constants/notification';
 import { showNotification } from '../../redux/actions/notificationActions';
-import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -92,11 +93,11 @@ class EditAccountInfo extends React.Component {
 
   loadDemandId = (id) => {
     const { userId, userType } = getUserEntity();
-    const queryUserId = id && typeof(id) !== 'undefined' ? id : this.props.match.params.id;
-    
+    const queryUserId = id && typeof (id) !== 'undefined' ? id : this.props.match.params.id;
+
     let demandUserId = userId;
 
-    if (userType === userTypes.MODE_ADMIN && typeof(queryUserId) !== 'undefined') {
+    if (userType === userTypes.MODE_ADMIN && typeof (queryUserId) !== 'undefined') {
       demandUserId = queryUserId;
     }
     if (queryUserId !== this.demandUserId) {
@@ -108,29 +109,32 @@ class EditAccountInfo extends React.Component {
   }
 
   loadUsedDayOffInfo = () => {
-        //Load usedDayOff
-    Axios.all([getUsedDayOff(this.cancelSource.token, this.state.demandUserId), getDayOffSetting(this.cancelSource.token)])
-    .then(
-      Axios.spread((usedDayOffRepsonse, dayOffSettingResponse) => {
-        let usedDayOff = '-', dayOffSetting = '-';
-        if (usedDayOffRepsonse.data.success) {
-          usedDayOff = usedDayOffRepsonse.data.numOffDays;
-        }
-        if (dayOffSettingResponse.data.success) {
-          const { settings } = dayOffSettingResponse.data;
-          dayOffSetting = settings[0].fValue;
-        }
-        this.__isMounted && this.setState(prevState => ({
-          ...prevState,
-          usedDayOff,
-          dayOffSetting
-        }));
-      })
-    )
-    .catch(err => {
-      if (err.message !== USER_LEFT_PAGE)
-        this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Used Day-off'!`);
-    });
+    //Load dayOffRemaining
+    Axios.all([getDayOff(this.cancelSource.token, this.state.demandUserId), getDayOffSetting(this.cancelSource.token)])
+      .then(
+        Axios.spread((dayOffRes, settingRes) => {
+          let dayOffRemaining = '-', dayOffTotal = '-', dayOffSetting = 0;
+          if (dayOffRes.data.success) {
+            dayOffRemaining = dayOffRes.data.fYearRemaining;
+            dayOffTotal = dayOffRes.data.fYearTotal;
+          }
+
+          if (settingRes.data.success) {
+            const { settings } = settingRes.data;
+            dayOffSetting = settings[0].fValue;
+          }
+          this.__isMounted && this.setState(prevState => ({
+            ...prevState,
+            dayOffRemaining,
+            dayOffTotal,
+            dayOffSetting,
+          }));
+        })
+      )
+      .catch(err => {
+        if (err.message !== USER_LEFT_PAGE)
+          this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Used Day-off'!`);
+      });
   }
 
   loadData = async (demandId) => {
@@ -152,28 +156,28 @@ class EditAccountInfo extends React.Component {
       this.loadUsedDayOffInfo();
 
       Axios.all([getAllTeams(this.cancelSource.token), getAllPositions(this.cancelSource.token)])
-      .then(
-        Axios.spread((allTeamResponse, allPositionResponse) => {
-          let allTeams = allTeamResponse.data.teams.map(item => ({
-            value: item.fId,
-            label: item.fTeamName
-          }));
-          
-          let allPositions = allPositionResponse.data.positions.map(item => ({
-            value: item.fId,
-            label: item.fPosName
-          }));
-          
-          this.__isMounted && this.setState(prevState => ({
-            ...prevState,
-            allTeams,
-            allPositions
-          }));     
-      }))
-      .catch(err => {
-        if (err.message !== USER_LEFT_PAGE) 
-          this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load Positions and Teams!`);
-      });
+        .then(
+          Axios.spread((allTeamResponse, allPositionResponse) => {
+            let allTeams = allTeamResponse.data.teams.map(item => ({
+              value: item.fId,
+              label: item.fTeamName
+            }));
+
+            let allPositions = allPositionResponse.data.positions.map(item => ({
+              value: item.fId,
+              label: item.fPosName
+            }));
+
+            this.__isMounted && this.setState(prevState => ({
+              ...prevState,
+              allTeams,
+              allPositions
+            }));
+          }))
+        .catch(err => {
+          if (err.message !== USER_LEFT_PAGE)
+            this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load Positions and Teams!`);
+        });
     } else {
       this.props.handleShowNotif && this.props.handleShowNotif(NOTIF_ERROR, `Counldn't load user profile. Try later!`);
     }
@@ -198,115 +202,116 @@ class EditAccountInfo extends React.Component {
 
   render() {
     const { classes, handleShowNotif } = this.props;
-    const { user, editMode, allTeams, allPositions, demandUserId, usedDayOff, dayOffSetting } = this.state;
-    const remainingDayOff = dayOffSetting - usedDayOff;
+    const { user, editMode, allTeams, allPositions, demandUserId, dayOffRemaining, dayOffTotal, dayOffSetting } = this.state;
+
+    user.fYearTotal = dayOffTotal;
 
     const { userId, userType } = getUserEntity();
     const isCurrentLoggedInUser = (userId === demandUserId);
     const isHrSession = userTypes.MODE_ADMIN === userType;
-    const isShowLetterList = (isHrSession && !isCurrentLoggedInUser && typeof(demandUserId) !== 'undefined');
+    const isShowLetterList = (isHrSession && !isCurrentLoggedInUser && typeof (demandUserId) !== 'undefined');
 
     return (
       <DashContainer className={classes.layout}>
-          <CssBaseline />
-          {compareJsonObjectValue(user, initialValues)
-            ? 
-            <Paper className={classes.paper}>
-                <div className={classes.preloadWrapper}>
-                  <Typography 
-                    component="h3" 
-                    variant="h5"
-                  >
-                  User not found! (ID: {demandUserId})
+        <CssBaseline />
+        {compareJsonObjectValue(user, initialValues)
+          ?
+          <Paper className={classes.paper}>
+            <div className={classes.preloadWrapper}>
+              <Typography
+                component="h3"
+                variant="h5"
+              >
+                User not found! (ID: {demandUserId})
                   </Typography>
-                  <CircularUnderLoad size={20} /> 
-                </div>
-                <Divider/>
-            </Paper>
-            : 
-            <Paper className={classes.paper}>
-              {editMode && isHrSession ? (
-                <Formik
-                  initialValues={user}
-                  validationSchema={ValidationSchema}
-                  onSubmit={(values, actions) => {
-                    //Call api update here
-                    updateProfile(this.state.demandUserId, values)
-                      .then(res => {
-                        handleShowNotif(
-                          NOTIF_SUCCESS,
-                          `Updated profile successfully!`
-                        );
-                        this.loadData();
-                        this.handleEnableEditMode(false);
-                        actions.setSubmitting(false);
-                      })
-                      .catch(err => {
-                        handleShowNotif(
-                          NOTIF_ERROR,
-                          `Update failed! (${err.message})`
-                        );
-                        actions.setSubmitting(false);
-                      });
-                  }}
-                >
-                  {({
-                    values,
-                    isSubmitting,
-                    handleReset,
-                    handleSubmit,
-                    handleBlur,
-                    handleChange
-                  }) => {
-                    const isUserInfoChanged = !compareJsonObjectValue(values, user);
-                    return (
-                      <Form>
-                        {/* Top buttons */}
-                        <React.Fragment>
-                          <Grid
-                            item
-                            container
-                            xs={12}
-                            className={classes.buttonGroupTop}
+              <CircularUnderLoad size={20} />
+            </div>
+            <Divider />
+          </Paper>
+          :
+          <Paper className={classes.paper}>
+            {editMode && isHrSession ? (
+              <Formik
+                initialValues={user}
+                validationSchema={ValidationSchema}
+                onSubmit={(values, actions) => {
+                  //Call api update here
+                  updateProfile(this.state.demandUserId, values)
+                    .then(res => {
+                      handleShowNotif(
+                        NOTIF_SUCCESS,
+                        `Updated profile successfully!`
+                      );
+                      this.loadData();
+                      this.handleEnableEditMode(false);
+                      actions.setSubmitting(false);
+                    })
+                    .catch(err => {
+                      handleShowNotif(
+                        NOTIF_ERROR,
+                        `Update failed! (${err.message})`
+                      );
+                      actions.setSubmitting(false);
+                    });
+                }}
+              >
+                {({
+                  values,
+                  isSubmitting,
+                  handleReset,
+                  handleSubmit,
+                  handleBlur,
+                  handleChange
+                }) => {
+                  const isUserInfoChanged = !compareJsonObjectValue(values, user);
+                  return (
+                    <Form>
+                      {/* Top buttons */}
+                      <React.Fragment>
+                        <Grid
+                          item
+                          container
+                          xs={12}
+                          className={classes.buttonGroupTop}
+                        >
+                          <Button
+                            className={classes.button}
+                            size="small"
+                            color="primary"
+                            variant="contained"
+                            onClick={handleSubmit}
+                            disabled={isSubmitting || !isUserInfoChanged}
                           >
-                            <Button
-                              className={classes.button}
-                              size="small"
-                              color="primary"
-                              variant="contained"
-                              onClick={handleSubmit}
-                              disabled={isSubmitting || !isUserInfoChanged}
+                            <Icon
+                              fontSize="small"
+                              className={classes.leftIcon}
                             >
-                              <Icon
-                                fontSize="small"
-                                className={classes.leftIcon}
-                              >
-                                save
+                              save
                               </Icon>
-                              SAVE
+                            SAVE
                             </Button>
-                            <Button
-                              className={classes.button}
-                              size="small"
-                              color="secondary"
-                              variant="outlined"
-                              disabled={isSubmitting}
-                              onClick={() => {
-                                handleReset();
-                                this.handleEnableEditMode(false);
-                              }}
-                            >
-                              {!isUserInfoChanged ? (
-                                <React.Fragment>
-                                  <Icon
-                                    fontSize="small"
-                                    className={classes.leftIcon}
-                                  >
-                                    cancel
+                          <Button
+                            className={classes.button}
+                            size="small"
+                            color="secondary"
+                            variant="outlined"
+                            disabled={isSubmitting}
+                            onClick={() => {
+                              handleReset();
+                              this.handleEnableEditMode(false);
+                            }}
+                          >
+                            {!isUserInfoChanged ? (
+                              <React.Fragment>
+                                <Icon
+                                  fontSize="small"
+                                  className={classes.leftIcon}
+                                >
+                                  cancel
                                   </Icon>
-                                  Cancel
+                                Cancel
                                 </React.Fragment>
-                              ) : (
+                            ) : (
                                 <React.Fragment>
                                   <Icon
                                     fontSize="small"
@@ -317,217 +322,247 @@ class EditAccountInfo extends React.Component {
                                   Discard
                                 </React.Fragment>
                               )}
-                            </Button>
-                          </Grid>
-                        </React.Fragment>
-                        {/* End - Top buttons */}
-                        <React.Fragment>
-                          <Typography
-                            variant="h5"
-                            align="center"
-                            component="h1"
-                            className={classes.formTitle}
-                          >
-                            Edit {isCurrentLoggedInUser ? ' My ' : ` ${user.fFirstName} `} Profile
+                          </Button>
+                        </Grid>
+                      </React.Fragment>
+                      {/* End - Top buttons */}
+                      <React.Fragment>
+                        <Typography
+                          variant="h5"
+                          align="center"
+                          component="h1"
+                          className={classes.formTitle}
+                        >
+                          Edit {isCurrentLoggedInUser ? ' My ' : ` ${user.fFirstName} `} Profile
                           </Typography>
-                        </React.Fragment>
-                        <React.Fragment>
-                          {/** First name */}
-                          <Grid container spacing={16}>
-                            <Grid item xs={12} sm={6}>
-                              <Field
-                                name="fFirstName"
-                                render={({ field }) => {
-                                  return (
-                                    <TextField
-                                      fullWidth
-                                      label="First name"
-                                      name={field.name}
-                                      value={field.value}
-                                      onBlur={handleBlur}
-                                      onChange={handleChange}
-                                    />
-                                  );
-                                }}
-                              />
-                              <ErrorMessage name='fFirstName'>
-                                {msg => (
-                                  <div className={classes.errorMessage}>
-                                    {msg}
-                                  </div>
-                                )}
-                              </ErrorMessage>
-                            </Grid>
-                            {/** Last name */}
-                            <Grid item xs={12} sm={6}>
-                              <Field
-                                name="fLastName"
-                                render={({ field }) => {
-                                  return (
-                                    <TextField
-                                      fullWidth
-                                      label="Last name"
-                                      name={field.name}
-                                      value={field.value}
-                                      onBlur={handleBlur}
-                                      onChange={handleChange}
-                                    />
-                                  );
-                                }}
-                              />
-                              <ErrorMessage name='fLastName'>
+                      </React.Fragment>
+                      <React.Fragment>
+                        {/** First name */}
+                        <Grid container spacing={16}>
+                          <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fFirstName"
+                              render={({ field }) => {
+                                return (
+                                  <TextField
+                                    fullWidth
+                                    label="First name"
+                                    name={field.name}
+                                    value={field.value}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                  />
+                                );
+                              }}
+                            />
+                            <ErrorMessage name='fFirstName'>
                               {msg => (
                                 <div className={classes.errorMessage}>
                                   {msg}
                                 </div>
                               )}
                             </ErrorMessage>
-                            </Grid>
-                            {/** Gender name */}
-                            <Grid item xs={12} sm={6}>
-                              <Field
-                                name="fGender"
-                                render={({ field, form }) => {
-                                  return (
-                                    <SelectCustom
-                                      name={field.name}
-                                      label="Gender"
-                                      value={field.value}
-                                      options={mockupGender}
-                                      onChange={handleChange}
-                                    />
-                                  );
-                                }}
-                              />
-                            </Grid>
-                            {/** fEmail  */}
-                            <Grid item xs={12} sm={6}>
-                              <Field
-                                name="fEmail"
-                                render={({ field, form }) => {
-                                  return (
-                                    <TextField
-                                      fullWidth
-                                      label="Email"
-                                      name={field.name}
-                                      value={field.value}
-                                      onBlur={handleBlur}
-                                      onChange={handleChange}
-                                    />
-                                  );
-                                }}
-                              />
-                              <ErrorMessage name='fEmail'>
-                                {msg => (
-                                  <div className={classes.errorMessage}>
-                                    {msg}
-                                  </div>
-                                )}
-                              </ErrorMessage>
-                            </Grid>
-                            {/** fPhone number  */}
-                            <Grid item xs={12} sm={6}>
-                              <Field
-                                name="fPhone"
-                                render={({ field, form }) => {
-                                  return (
-                                    <TextField
-                                      fullWidth
-                                      label="Phone"
-                                      value={field.value}
-                                      name={field.name}
-                                      onBlur={handleBlur}
-                                      onChange={handleChange}
-                                    />
-                                  );
-                                }}
-                              />
-                              <ErrorMessage name='fPhone'>
-                                {msg => (
-                                  <div className={classes.errorMessage}>
-                                    {msg}
-                                  </div>
-                                )}
-                              </ErrorMessage>
-                            </Grid>
-                            {!isHrSession ? null : (
-                              <React.Fragment>
-                                {/** fTeamName name */}
-                                <Grid item xs={12} sm={6}>
-                                  <Field
-                                    name="fTeamId"
-                                    render={({ field }) => {
-                                      return (
-                                        <SelectCustom
-                                          name={field.name}
-                                          label="Team"
-                                          value={field.value}
-                                          options={allTeams}
-                                          onChange={handleChange}
-                                        />
-                                      );
-                                    }}
-                                  />
-                                </Grid>
-                                {/** fPositionName name */}
-                                <Grid item xs={12} sm={6}>
-                                  <Field
-                                    name="fPosition"
-                                    render={({ field }) => {
-                                      return (
-                                        <SelectCustom
-                                          name={field.name}
-                                          label="Position"
-                                          value={field.value}
-                                          options={allPositions}
-                                          onChange={handleChange}
-                                        />
-                                      );
-                                    }}
-                                  />
-                                </Grid>
-                              </React.Fragment>
-                            )}
                           </Grid>
-                        </React.Fragment>
-                        <React.Fragment>
-                          {/* Bottom buttons */}
-                          <Grid item xs={12} className={classes.buttonGroupBottom}>
-                            <Button
-                              size="small"
-                              color="primary"
-                              variant="contained"
-                              onClick={handleSubmit}
-                              disabled={isSubmitting || !isUserInfoChanged}
-                              className={classes.button}
-                            >
-                              <Icon fontSize="small" className={classes.leftIcon}>
-                                save
-                              </Icon>
-                              SAVE
-                            </Button>
-                            <Button
-                              size="small"
-                              color="secondary"
-                              variant="outlined"
-                              className={classes.button}
-                              disabled={isSubmitting}
-                              onClick={() => {
-                                handleReset();
-                                this.handleEnableEditMode(false);
+                          {/** Last name */}
+                          <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fLastName"
+                              render={({ field }) => {
+                                return (
+                                  <TextField
+                                    fullWidth
+                                    label="Last name"
+                                    name={field.name}
+                                    value={field.value}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                  />
+                                );
                               }}
-                            >
-                              {!isUserInfoChanged ? (
-                                <React.Fragment>
-                                  <Icon
-                                    fontSize="small"
-                                    className={classes.leftIcon}
-                                  >
-                                    cancel
+                            />
+                            <ErrorMessage name='fLastName'>
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
+                          </Grid>
+                          {/** Gender name */}
+                          <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fGender"
+                              render={({ field, form }) => {
+                                return (
+                                  <SelectCustom
+                                    name={field.name}
+                                    label="Gender"
+                                    value={field.value}
+                                    options={mockupGender}
+                                    onChange={handleChange}
+                                  />
+                                );
+                              }}
+                            />
+                          </Grid>
+                          {/** fEmail  */}
+                          <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fEmail"
+                              render={({ field, form }) => {
+                                return (
+                                  <TextField
+                                    fullWidth
+                                    label="Email"
+                                    name={field.name}
+                                    value={field.value}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                  />
+                                );
+                              }}
+                            />
+                            <ErrorMessage name='fEmail'>
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
+                          </Grid>
+                          {/** fPhone number  */}
+                          <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fPhone"
+                              render={({ field, form }) => {
+                                return (
+                                  <TextField
+                                    fullWidth
+                                    label="Phone"
+                                    value={field.value}
+                                    name={field.name}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                  />
+                                );
+                              }}
+                            />
+                            <ErrorMessage name='fPhone'>
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
+                          </Grid>
+                          {!isHrSession ? null : (
+                            <React.Fragment>
+                              {/** fTeamName name */}
+                              <Grid item xs={12} sm={6}>
+                                <Field
+                                  name="fTeamId"
+                                  render={({ field }) => {
+                                    return (
+                                      <SelectCustom
+                                        name={field.name}
+                                        label="Team"
+                                        value={field.value}
+                                        options={allTeams}
+                                        onChange={handleChange}
+                                      />
+                                    );
+                                  }}
+                                />
+                              </Grid>
+                              {/** fPositionName name */}
+                              <Grid item xs={12} sm={6}>
+                                <Field
+                                  name="fPosition"
+                                  render={({ field }) => {
+                                    return (
+                                      <SelectCustom
+                                        name={field.name}
+                                        label="Position"
+                                        value={field.value}
+                                        options={allPositions}
+                                        onChange={handleChange}
+                                      />
+                                    );
+                                  }}
+                                />
+                              </Grid>
+                            </React.Fragment>
+                          )}
+                        </Grid>
+                        {/** day-off  */}
+                        <Grid item xs={12} sm={6}>
+                          <Field
+                            name="fYearTotal"
+                            render={({ field, form, ...otherProps }) => {
+                              return (
+                                <TextField
+                                  fullWidth
+                                  label="Remaining day-off"
+                                  type="number"
+                                  inputProps={{ min: 0, max: dayOffSetting, step: 0.5 }}
+                                  value={field.value}
+                                  name={field.name}
+                                  onChange={handleChange}
+                                />
+                              );
+                            }}
+                          />
+                          <ErrorMessage name="dayOff">
+                            {msg => (
+                              <div style={{
+                                color: 'red',
+                                fontSize: 12,
+                                fontWeight: 500
+                              }}>
+                                {msg}
+                              </div>
+                            )}
+                          </ErrorMessage>
+                        </Grid>
+                      </React.Fragment>
+                      <React.Fragment>
+                        {/* Bottom buttons */}
+                        <Grid item xs={12} className={classes.buttonGroupBottom}>
+                          <Button
+                            size="small"
+                            color="primary"
+                            variant="contained"
+                            onClick={handleSubmit}
+                            disabled={isSubmitting || !isUserInfoChanged}
+                            className={classes.button}
+                          >
+                            <Icon fontSize="small" className={classes.leftIcon}>
+                              save
+                              </Icon>
+                            SAVE
+                            </Button>
+                          <Button
+                            size="small"
+                            color="secondary"
+                            variant="outlined"
+                            className={classes.button}
+                            disabled={isSubmitting}
+                            onClick={() => {
+                              handleReset();
+                              this.handleEnableEditMode(false);
+                            }}
+                          >
+                            {!isUserInfoChanged ? (
+                              <React.Fragment>
+                                <Icon
+                                  fontSize="small"
+                                  className={classes.leftIcon}
+                                >
+                                  cancel
                                   </Icon>
-                                  Cancel
+                                Cancel
                                 </React.Fragment>
-                              ) : (
+                            ) : (
                                 <React.Fragment>
                                   <Icon
                                     fontSize="small"
@@ -538,14 +573,14 @@ class EditAccountInfo extends React.Component {
                                   Discard
                                 </React.Fragment>
                               )}
-                            </Button>
-                          </Grid>
-                        </React.Fragment>
-                      </Form>
-                    );
-                  }}
-                </Formik>
-              ) : (
+                          </Button>
+                        </Grid>
+                      </React.Fragment>
+                    </Form>
+                  );
+                }}
+              </Formik>
+            ) : (
                 <React.Fragment>
                   <div className={classes.topInfo}>
                     {demandUserId && <Link to={`/password/${demandUserId}`}>
@@ -572,9 +607,9 @@ class EditAccountInfo extends React.Component {
                         <EditIcon className={classes.leftIcon} />
                         Edit
                       </Button>
-                      ) : null}
+                    ) : null}
                   </div>
-    
+
                   {/* Title */}
                   <Typography component="h1" variant="h4">
                     {isCurrentLoggedInUser ? 'My Profile' : `${user.fFirstName}'s Profile`}
@@ -592,7 +627,7 @@ class EditAccountInfo extends React.Component {
                         First name:
                         <span className={classes.fieldValue}>{` ${
                           user.fFirstName
-                        }`}</span>
+                          }`}</span>
                       </div>
                     </Grid>
                     {/* last name  */}
@@ -601,7 +636,7 @@ class EditAccountInfo extends React.Component {
                         Last name:
                         <span className={classes.fieldValue}>{` ${
                           user.fLastName
-                        }`}</span>
+                          }`}</span>
                       </div>
                     </Grid>
                     {/* Gender */}
@@ -619,16 +654,16 @@ class EditAccountInfo extends React.Component {
                         Phone:
                         <span className={classes.fieldValue}>{` ${
                           user.fPhone
-                        }`}</span>
+                          }`}</span>
                       </div>
                     </Grid>
                     {/* Email */}
-                    <Grid item xs={12}>
+                    <Grid item xs={12} sm={6}>
                       <div className={classes.fieldTitle}>
                         Email:
                         <span className={classes.fieldValue}>{` ${
                           user.fEmail
-                        }`}</span>
+                          }`}</span>
                       </div>
                     </Grid>
                   </Grid>
@@ -639,7 +674,7 @@ class EditAccountInfo extends React.Component {
                         Position:
                         <span className={classes.fieldValue}>{` ${
                           user.fPositionName
-                        }`}</span>
+                          }`}</span>
                       </div>
                     </Grid>
                     {/* Team name */}
@@ -648,22 +683,22 @@ class EditAccountInfo extends React.Component {
                         Team:
                         <span className={classes.fieldValue}>{` ${
                           user.fTeamName
-                        }`}</span>
+                          }`}</span>
                       </div>
                     </Grid>
                     {/* Remaining day-off */}
                     <Grid item xs={12} sm={6}>
-                    <div className={classes.fieldTitle}>
-                      Remaining day-off:
-                      <span className={classes.fieldValue}>{` ${remainingDayOff}/${dayOffSetting} (this year)`}</span>
-                    </div>
-                  </Grid>
+                      <div className={classes.fieldTitle}>
+                        Remaining day-off:
+                      <span className={classes.fieldValue}>{` ${dayOffRemaining}/${dayOffTotal} (this year)`}</span>
+                      </div>
+                    </Grid>
                   </Grid>
                 </React.Fragment>
               )}
-            </Paper>
-          }
-        { isShowLetterList ? 
+          </Paper>
+        }
+        {isShowLetterList ?
           (
             <React.Fragment>
               <LettersManagement
