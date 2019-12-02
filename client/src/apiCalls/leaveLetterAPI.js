@@ -113,16 +113,6 @@ export const approveLeaveLetterRequest = (letterId, userId) => {
   );
 };
 
-export const getUsedDayOff = (cancelToken = undefined, userId, toMonth, inYear) => {
-  const url = `${SERVER_HOST_DEV}/leaveletter/used-off-days?userId=${userId}` + (!isNaN(toMonth) ? `&month=${toMonth}` : '') + (!isNaN(inYear) ? `&year=${inYear}` : '');
-  return axios.get(url, {
-    headers: {
-      'x-access-token': getCookie(ACCESS_TOKEN_KEY)
-    },
-    cancelToken
-  });
-} 
-
 export const getDemandLetterByFilter = (cancelToken = undefined, filterOptions) => { 
   const url = `${SERVER_HOST_DEV}/leaveletter/filter`;
  

@@ -13,6 +13,7 @@ const {
   users: userModel,
   leaveLetters: leaveLetterModel,
   rejectedLetterDetail: rejectedLetterModel,
+  dayOff: dayOffModel,
 } = require('../../models');
 
 /**
@@ -49,7 +50,8 @@ const validatingQueryParams = ({ fromMonth, toMonth, fromYear, toYear }) =>
   !(((toYear && (isNaN(toYear) || parseInt(toYear) < parseInt(fromYear)) || 
     fromMonth && (isNaN(fromMonth) || parseInt(fromMonth) > 12)) || 
     (fromYear && (isNaN(fromYear))) ||
-    (toMonth && (isNaN(toMonth) || parseInt(toMonth) > 12 || parseInt(toMonth) < parseInt(fromMonth))))  
+    (toMonth && (isNaN(toMonth) || parseInt(toMonth) > 12 || 
+    (parseInt(toYear) === parseInt(fromYear) && parseInt(toMonth) < parseInt(fromMonth)))))  
   )
 
 Router.get('/details', async (req, res) => {
@@ -235,31 +237,86 @@ Router.patch('/', bodyMustNotEmpty, async (req, res) => {
     if (!fUserType) throw { code: 401, msg: 'NO_PERMISSION' };
 
     // others can update oneself's
-    const entity = standardizeObj(req.body.info);
-    const { fUserId } = entity;
+    const queryEntity = standardizeObj(req.body.info);
+    const { fUserId, fStatus } = queryEntity;
     const userId = getIdFromToken(req.token_payload);
+
     // only Admin can update everyone's
     if (fUserType !== 'Admin' && userId !== fUserId) throw { code: 401, msg: 'NO_PERMISSION' };
 
     const fId = req.body.id;
-    if (!entity || Object.keys(entity).length < 1 || !fId) throw { msg: 'INVALID_VALUES' };
+    if (!queryEntity || Object.keys(queryEntity).length < 1 || !fId) throw { msg: 'INVALID_VALUES' };
 
-    const { fStatus, fFromDT, fToDT } = entity;
+    const lLEntity = await leaveLetterModel.loadAll({ fFromDT, fFromOpt, fToDT, fToOpt }, 
+      { where: { fId }});
+
+    const { fFromDT, fFromOpt, fToDT, fToOpt } = lLEntity[0];
     // validate status value
     if (
       (fStatus || 3) &&
       !leaveLetterModel.rawAttributes.fStatus.values.includes(fStatus)
     )
       throw { msg: 'INVALID_VALUES' };
+ 
+    let fromDate = moment(fFromDT).local();
+    let toDate = moment(fToDT).local();
 
     // validate whether fromDT <= toDT
-    if (fFromDT && fToDT && 
-      new Date(fFromDT) > new Date(fToDT)) throw { msg: 'INVALID_VALUES' };
+    if (fromDate && toDate && fromDate > toDate)
+     throw { msg: 'INVALID_VALUES' };
 
-    const affected = await leaveLetterModel.modify(entity, { where: { fId, fUserId } });
+    if ( fStatus === 2 ) {
+      const selectedYear = moment(fromDate).year();
+      const dOEntity = await dayOffModel.loadAll({ fYearRemaining }, {where: { fUserId, fYear: selectedYear }});
+      const { fYearRemaining, fYearUsed } = dOEntity[0];  
+
+      let useDays = 0;
+
+      if (fromDate.isSame(toDate, 'date')) {
+        if (fFromOpt === 'allday') {
+          useDays = 1;
+        } else {
+          useDays = 0.5;
+        }
+      }
+      else
+      {
+
+        fFromOpt === 'afternoon' ? useDays += 0.5 : useDays += 1;
+        console.log("TCL: useDays", useDays);
+        fToOpt === 'morning' ? useDays += 0.5 : useDays += 1;
+        console.log("TCL: useDays", useDays);
+    
+        fromDate.add(1, 'day');
+        console.log("TCL: fromDate", fromDate);
+
+        while (fromDate.isBefore(toDate, 'date')) {
+          let fromDay = fromDate.day();
+          if (fromDay !== 6 && fromDay !== 0) {
+            useDays += 1;
+          }
+          console.log("TCL: useDays", useDays)
+          fromDate.add(1, 'day');
+          console.log("TCL: fromDate", fromDate)
+        } 
+      }
+
+      console.log("TCL: fYearRemaining", fYearRemaining)
+
+      if (useDays > fYearRemaining) throw { msg: 'REMAINING_DAY-OFF_NOT_ENOUGH' }
+      
+      const dayOffAffected = await dayOffModel.modify({
+        fYearRemaining: fYearRemaining - useDays, 
+        fYearUsed: fYearUsed + useDays }, 
+        { where: { fUserId, fYear: selectedYear } });
+
+      if (dayOffAffected.length < 1) throw { msg: 'LETTER_NOT_UPDATED' };
+    }
+    
+    const affected = await leaveLetterModel.modify(queryEntity, { where: { fId, fUserId } });
     if (affected[0] < 1) throw { msg: 'LETTER_NOT_UPDATED' };
 
-    handleSuccess(res, { leaveLetter: entity });
+    handleSuccess(res, { leaveLetter: queryEntity });
   } catch (err) {
     handleFailure(res, { err, route: req.originalUrl });
   }
@@ -456,63 +513,5 @@ Router.post('/send-email', async (req, res) => {
     handleFailure(res, { err, route: req.originalUrl });
   }
 });
-
-Router.get('/used-off-days', async (req, res) => {
-  try {
-    let { userId, month, year } = req.query;
-    // only Admin can view all; others can view oneself's
-    const fUserType = await getPermissionByToken(req.token_payload);
-    if(fUserType !== 'Admin' && userId !== getIdFromToken(req.token_payload)) throw { code: 401, msg: 'NO_PERMISSION' };
-
-    if(!userId || 
-      (await getPermissionByToken(req.token_payload) !== 'Admin' && 
-      userId !== getIdFromToken(req.token_payload))) throw { msg: 'INVALID_QUERY' };
-    if(isNaN(month) || ![...Array(12).keys()].includes(+month - 1)) month = 12;
-    if(isNaN(year) || (year > moment().get('year') || year < 2000)) year = moment().get('year');
-    
-    // counting used off days
-    let numOffDays = 0;
-    const endMonthDayOfFromDate = moment(`${month}-02-${year}`).endOf('month').format('DD');
-    let fromDate = new Date(`01/01/${year}`);
-    let toDate = new Date(`${month}/${endMonthDayOfFromDate}/${year}`);
-    const { rawLeaveLetters } = await leaveLetterModel.countAll({},
-      { where: { 
-        fUserId: userId,
-        fFromDT: { [Op.between]: [fromDate, toDate] },
-        fStatus: LEAVING_LETTER_STATUS.APPROVED
-      } });
-    
-    for(let i = 0; i < rawLeaveLetters.length; i++) {
-      let { fFromDT, fToDT, fFromOpt } = rawLeaveLetters[i].get({ plain: true });
-      // check if out of range
-      if(fFromDT < fromDate) {
-        fFromDT = fromDate
-        fFromOpt = FROM_OPTION.ALLDAY;
-      }
-      if(fToDT > toDate) fToDT = toDate;
-      // count all even weekends
-      if(fFromOpt !== FROM_OPTION.ALLDAY) numOffDays += 0.5;
-      else numOffDays += moment(fToDT).startOf('day').diff(moment(fFromDT).startOf('day'), 'days') + 1;
-      
-      // create an array of days to check for weekend
-      // if fFromDT is same as fToDT, dataArray can't handle
-      // so manually create an array containing 1 element (fFromDT)
-      const datesArray = moment(fFromDT).startOf('day').isSame(moment(fToDT).startOf('day')) ? [moment(fFromDT).format('MM-DD-YYYY')] : dateArray.range(fFromDT, fToDT, 'MM-DD-YYYY');
-      // exclude weekend & fFromDT & fToDT (already subtract above)
-      for (let j = 0; j < datesArray.length; j++) {
-        if (WEEKEND_ORDERS
-          .includes(moment(datesArray[j]).day())) {
-          numOffDays -= 1;
-          datesArray.splice(j--, 1); // splice that day from array then update index j
-        }
-      }
-    }
-
-    handleSuccess(res, { numOffDays });
-  }
-  catch(err) {
-    handleFailure(res, { err, route: req.originalUrl });
-  }
-})
 
 module.exports = Router;
