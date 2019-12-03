@@ -147,7 +147,7 @@ Router.patch("/profile", bodyMustNotEmpty, userMustBeAdmin, async (req, res) => 
 
     const { fYearTotal, fYearUsed } = selectedDayOff[0].dataValues;
 
-    if ((newYearTotal < fYearTotal && newYearTotal < fYearUsed) && (newYearTotal > maxDayOff))
+  if (newYearTotal > maxDayOff)
       throw { msg: 'INVALID_DAY-OFF' }
     
     const affectedDayOff = await dayOffModel.modify({

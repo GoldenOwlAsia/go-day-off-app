@@ -249,8 +249,11 @@ Router.patch('/', bodyMustNotEmpty, async (req, res) => {
 
     const lLEntity = await leaveLetterModel.loadAll({ fFromDT, fFromOpt, fToDT, fToOpt }, 
       { where: { fId }});
-
+    
+    if (!lLEntity || Object.keys(lLEntity).length < 1) throw { msg: 'NO_RESULT' };
+    
     const { fFromDT, fFromOpt, fToDT, fToOpt } = lLEntity[0];
+
     // validate status value
     if (
       (fStatus || 3) &&
