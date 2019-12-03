@@ -10,33 +10,42 @@ import { PHONE_PATTERN, EMAIL_PATTERN } from '../../constants/regexPatterns';
  * email: 45
  */
 const YupValidationSchema = Yup.object().shape({
-  fFirstName: Yup.string()
+  firstName: Yup.string()
               .max(30, `"First name" max length is ${30}`)
               .required(`"First name" can't be empty`),
-  fLastName: Yup.string()
+  lastName: Yup.string()
             .max(30, `"Last name" max length is ${30}`)
             .required(`"Last name" can't be empty`),
-  fEmail: Yup.string()
+  email: Yup.string()
           .max(45, `"Email" max length is ${45}`)
           .matches(EMAIL_PATTERN, `"Email" is invalid`)
           .required(`"Email" can't be empty`),
-  fPhone: Yup.string()
+  phone: Yup.string()
           .min(10, `"Phone number" must be 10-character string`)
           .max(10, `"Phone number" must be 10-character string`)
           .matches(PHONE_PATTERN, `"Phone number" is invalid`)
           .required(`"Phone number" can't be empty`),
-  fAddress: Yup.string()
-          .required(`"Address" can't be empty`),
-  fPosition: Yup.string()
+  rawPwd: Yup
+          .string()
+          .required('Please Enter your password')
+          .matches(
+            /^(((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{8,})/,
+            "Must be at least 8 characters long, must contain letters and numbers"
+          ),
+  rawConfirmPwd: Yup
+          .string()
+          .required(`Please confirm your password`)
+          .oneOf([Yup.ref("rawPwd"), null], "Passwords must match"),
+//   address:  Yup.string()
+//           .required(`"Address" can't be empty`),
+  position: Yup.string()
           .required(`"Position" can't be empty`),
-  fTeamId: Yup.string()
+  teamId: Yup.string()
           .required(`"Team" can't be empty`),
-  fGender: Yup.number()
-          .moreThan(0, `Invalid gender`)
+  gender: Yup.number()
+          .moreThan(0, `Must select "Gender"`)
           .lessThan(4, `Invalid gender`)
           .integer(`Invalid gender`),
-//   fAddress:  Yup.string()
-//           .required(`"Address" can't be empty`),
 });
 
 export default YupValidationSchema;
