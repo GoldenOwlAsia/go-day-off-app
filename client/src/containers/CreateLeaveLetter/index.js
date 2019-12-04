@@ -2,10 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
+import emailjs from 'emailjs-com';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { Paper, Grid, Typography, TextField, Button, Slide } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
-
 import Icon from '@material-ui/core/Icon';
 
 // Using components
@@ -20,9 +20,11 @@ import { YupValidationSchema, CustomValidationSchema } from './validationSchema'
 //constants
 import { LeaveDurationOptions } from '../../constants/leaveDurationOptions';
 import { mockupLeaveLetterReasons } from '../../constants/mockups';
+import { EMAILJS_USER_ID } from '../../constants/api'
 
 //helpers
 import { getAllLeaveTypes } from '../../helpers/leaveLetterHelper';
+import { getUserId } from '../../helpers/authHelpers';
 
 //utilities
 import { calculateDayOffWithOption, compareDatesWithoutTime } from '../../utilities';
@@ -37,6 +39,7 @@ import {
 import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 import { createLeaveLetter } from '../../apiCalls/leaveLetterAPI';
 import { getDayOff } from '../../apiCalls/userAPIs';
+import { getProfile } from '../../apiCalls/userAPIs';
 
 // Notification redux
 import {
@@ -46,7 +49,6 @@ import {
 import { NOTIF_ERROR, NOTIF_SUCCESS, USER_LEFT_PAGE } from '../../constants/notification';
 import CircularUnderLoad from '../../components/Animation/CircularUnderLoad';
 import DaySessionsRadio from '../../components/DaySessionsRadio';
-import { getUserId } from '../../helpers/authHelpers';
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -76,6 +78,7 @@ class AbsenceLetterWithFormik extends React.Component {
     buttonClickable: false,
     isRequestCreated: false,
     lastLetterId: undefined,
+    userInfo: undefined,
   };
 
   switchButtonCtrl = enable => {
@@ -99,12 +102,20 @@ class AbsenceLetterWithFormik extends React.Component {
     }
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     this.__isMounted = true;
     const allLeaveTypes = getAllLeaveTypes();
     const { handleShowNotifNoHide } = this.props;
     this.cancelSource = CancelToken.source();
     // Call api request:
+    let response = await getProfile(getUserId());
+    let {
+      status: statusDemandUser,
+      data: { success: successDemandUser, user: demandInfo }
+    } = response;
+    if(statusDemandUser !== 200 || successDemandUser !== true || !demandInfo) return;
+    this.__isMounted && this.setState({ userInfo: demandInfo });
+
 
     Axios.all([ getAllApprover(), getAllInformTo(), getAllSubsitutes() ])
       .then(
@@ -195,6 +206,27 @@ class AbsenceLetterWithFormik extends React.Component {
     this.cancelSource.cancel(`User has suddenly left the page!`);
   }
 
+  sendRequestEmail = (user, letter) => {
+    const fullName = `${user.fFirstName} ${user.fLastName}`;
+    const startDate = letter.startDate.toString().substring(0, 10);
+    const startSession = letter.fromOpt === 'afternoon' ? '(afternoon)' : '';
+    const endDate = letter.endDate.toString().substring(0, 10);
+    const endSession = letter.toOpt === 'morning' ? '(morning)' : '';
+    const leaveReason = letter.reason;
+
+    const emailParams = {
+      to_email: 'phamtrongan@outlook.com ',
+      fullName,
+      startDate,
+      startSession,
+      endDate,
+      endSession,
+      leaveReason,
+    }
+
+    return emailjs.send('gmail', 'goleavesrequest', emailParams, EMAILJS_USER_ID);
+  }
+
   render() {
     const { classes, initialValues, handleShowNotif } = this.props;
     const {
@@ -217,14 +249,16 @@ class AbsenceLetterWithFormik extends React.Component {
               }}
               onSubmit={(values, actions) => {
                 let submitValues = JSON.parse(JSON.stringify(values));
+                const { userInfo } = this.state;
+                const { sendRequestEmail } = this;
 
                 if (compareDatesWithoutTime(values.startDate, values.endDate) === 0) {
                   submitValues.toOpt = submitValues.fromOpt;
                 }
 
-                createLeaveLetter(submitValues)
-                  .then(res => {
-                    const { fId } = res.data.leaveLetter.leaveLetter;
+                Axios.all([createLeaveLetter(submitValues), sendRequestEmail(userInfo, submitValues)]) 
+                  .then(Axios.spread((cLLRes, sRERes) => {
+                    const { fId } = cLLRes.data.leaveLetter.leaveLetter;
                     this.__isMounted && this.setState({
                       lastLetterId: fId,
                       isRequestCreated: true,
@@ -234,8 +268,9 @@ class AbsenceLetterWithFormik extends React.Component {
                       actions.resetForm();
                       actions.setSubmitting(false);
                     });
-                  })
+                  }))
                   .catch(err => {
+                  console.log("TCL: render -> err", err)
                     handleShowNotif(NOTIF_ERROR, `Can't create Leave request! Try later`);
                     actions.setSubmitting(false);
                   });

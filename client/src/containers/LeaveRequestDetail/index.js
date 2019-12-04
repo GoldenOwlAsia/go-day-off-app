@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
 import { withStyles } from '@material-ui/core/styles';
+import emailjs from 'emailjs-com';
 
 // icons
 import {
@@ -54,7 +55,8 @@ import {
   LEAVE_REQUEST_APPROVED,
   LEAVE_REQUEST_PENDING,
 } from '../../constants/requestStatusType';
-import { DATE_FORMAT_HALF } from '../../constants/dateTimeFormats'
+import { DATE_FORMAT_HALF } from '../../constants/dateTimeFormats';
+import { EMAILJS_ADMIN_ID, EMAILJS_USER_ID } from '../../constants/api'
 
 import {
   DaySessionOptions
@@ -64,6 +66,7 @@ import { responseUserPermission } from '../../constants/permission';
 
 //utilities
 import { parseUrlLastSegment } from '../../utilities';
+import Axios from 'axios';
 
 class LeaveRequestDetail extends React.Component {
   constructor() {
@@ -83,24 +86,74 @@ class LeaveRequestDetail extends React.Component {
     }));
   }
 
+  // send email
+  sendApprovedEmail = (user, letter) => {
+    const fullName = `${user.fFirstName} ${user.fLastName}`;
+    const startDate = letter.fFromDT.toString().substring(0, 10);
+    const startSession = letter.fFromOpt === 'afternoon' ? '(afternoon)' : '';
+    const endDate = letter.fToDT.toString().substring(0, 10);
+    const endSession = letter.fToOpt === 'morning' ? '(morning)' : '';
+    const leaveReason = letter.fReason;
+
+    const emailParams = {
+      to_email: 'phamtrongan@outlook.com ',
+      fullName,
+      startDate,
+      startSession,
+      endDate,
+      endSession,
+      leaveReason,
+    }
+
+    return emailjs.send('gmail', 'goleavesapprove', emailParams, EMAILJS_ADMIN_ID);
+  }
+
+  sendRejectedEmail = (user, letter, rejectReason) => {
+    const { demandUser } = this.state;
+    const fullName = `${user.fFirstName} ${user.fLastName}`;
+    const startDate = letter.fFromDT.toString().substring(0, 10);
+    const startSession = letter.fFromOpt === 'afternoon' ? '(afternoon)' : '';
+    const endDate = letter.fToDT.toString().substring(0, 10);
+    const endSession = letter.fToOpt === 'morning' ? '(morning)' : '';
+    const leaveReason = letter.fReason;
+
+    const emailParams = {
+      to_email: 'phamtrongan@outlook.com ',
+      fullName,
+      startDate,
+      startSession,
+      endDate,
+      endSession,
+      leaveReason,
+      rejectReason,
+    }
+
+    return demandUser.fTypeId === responseUserPermission.ADMIN ? 
+    emailjs.send('gmail', 'goleavesreject', emailParams, EMAILJS_ADMIN_ID) : 
+    emailjs.send('gmail', 'goleavescancel', emailParams, EMAILJS_USER_ID);
+  }
+
   // Handle approving
   handleApprove = ({setSubmitting, resetForm }) => {
+    const { sendApprovedEmail } = this;
     const { handleShowNotif } = this.props;
-    const { leaveLetter: { fUserId, fId } } = this.state;
+    const { leaveLetter, userInfo } = this.state;
+    const { fUserId, fId } = leaveLetter;
     //call api
-    approveLeaveLetterRequest(
+    Axios.all([approveLeaveLetterRequest(
       fId,
       fUserId,
       LEAVE_REQUEST_APPROVED
-    )
-      .then(res => {
+    ), sendApprovedEmail(userInfo, leaveLetter)])
+      .then(Axios.spread((aLLRRes, sendAERes) => 
+      {
         handleShowNotif(
           NOTIF_SUCCESS,
           `Leave request updated successfully!`
         );
         this.loadData();
         resetForm();
-      })
+      }))
       .catch(err => {
         handleShowNotif(
           NOTIF_ERROR,
@@ -112,19 +165,22 @@ class LeaveRequestDetail extends React.Component {
 
   //Handle rejecting 
   handleReject = ({setSubmitting, resetForm, errors, values: {rejectReason}}) => {
+    const { sendRejectedEmail } = this;
+    const { leaveLetter, userInfo } = this.state;
+
     if (errors && Object.keys(errors).length === 0) {
       const { handleShowNotif } = this.props;
       const { fId } = this.state.leaveLetter;
       // call update status api
-      rejectLeaveLetterRequest(fId, rejectReason)
-        .then(res => {
+      Axios.all([rejectLeaveLetterRequest(fId, rejectReason), sendRejectedEmail(userInfo, leaveLetter, rejectReason)])
+        .then(Axios.spread((rLLRRes, sRERes) => {
           handleShowNotif(
             NOTIF_SUCCESS,
             `Leave request updated successfully!`
           );
           resetForm();
           this.loadData();
-        })
+        }))
         .catch(err => {
           handleShowNotif(
             NOTIF_ERROR,
