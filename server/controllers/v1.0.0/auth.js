@@ -1,6 +1,7 @@
 const express = require('express');
 const Router = express.Router();
 const uid = require('rand-token').uid;
+const moment = require('moment');
 
 /**
  * Models
@@ -9,7 +10,8 @@ const {
   userRefToken: refTokenModel,
   users: userModel,
   userPermission: permissionModel,
-  teams: teamModel
+  teams: teamModel,
+  dayOff: dayOffModel,
 } = require('../../models');
 
 /**
@@ -44,25 +46,40 @@ Router.post('/account', bodyMustNotEmpty, verifyAccToken, userMustBeAdmin, async
     const userId = getIdFromToken(req.token_payload);
     if (!userId) throw { msg: 'USER_NOT_FOUND' };
 
-    const entity = standardizeObj(req.body);
+
+    let userEntity = standardizeObj(req.body);
+
     // validate gender value
-    const { fGender } = entity;
+    const { fGender } = userEntity;
     if (
       (fGender || 3) &&
       !userModel.rawAttributes.fGender.values.includes(fGender)
     )
       throw { msg: 'INVALID_VALUES' };
 
-    entity.fId = uid(USER_ID_LEN);
+    userEntity.fId = uid(USER_ID_LEN);
     // add foreign keys
-    const { fPosition, fTeamId, fTypeId } = entity;
-    if (fPosition) entity.positions_fId = fPosition;
+    const { fPosition, fTeamId, fTypeId } = userEntity;
+    if (fPosition) userEntity.positions_fId = fPosition;
 
-    if (fTeamId) { entity.teams_fId = fTeamId; } 
+    if (fTeamId) { userEntity.teams_fId = fTeamId; } 
 
-    if (fTypeId) entity.userPermission_fId = fTypeId;
+    if (fTypeId) userEntity.userPermission_fId = fTypeId;
 
-    const user = await userModel.add(entity);
+    const fYear = moment().year();
+
+    const dayoffEntity = {
+      fUserId: userEntity.fId,
+      fYear,
+      fYearTotal: userEntity.fDayOff,
+      fYearUsed: 0,
+      fYearRemaining: userEntity.fDayOff,
+    }
+
+    delete userEntity.fDayOff
+    
+    const dOff = await dayOffModel.add(dayoffEntity);
+    const user = await userModel.add(userEntity);
     handleSuccess(res, { code: 201, user });
   } catch (err) {
     handleFailure(res, { err, route: req.originalUrl });

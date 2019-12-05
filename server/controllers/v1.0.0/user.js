@@ -2,7 +2,7 @@ import sha256 from "sha256";
 const express = require('express');
 const Router = express.Router();
 const { Op } = require('sequelize');
-
+const moment = require('moment');
 
 /**
  * Models
@@ -12,7 +12,9 @@ const {
   teams: teamModel,
   positions: positionModel,
   leaveLetters: leaveLetterModel,
-  userPermission: permissionModel
+  userPermission: permissionModel,
+  dayOff: dayOffModel,
+  settings: settingModel,
 } = require('../../models');
 
 /**
@@ -25,9 +27,9 @@ const {
 const { standardizeObj } = require('../../helpers/standardize');
 const {
   getIdFromToken,
-  getPermissionByUserId
+  getPermissionByUserId,
+  getPermissionByToken
 } = require('../../helpers/getUserInfo');
-
 
 /**
  * Constants
@@ -121,14 +123,47 @@ Router.patch("/profile", bodyMustNotEmpty, userMustBeAdmin, async (req, res) => 
     const { fTeamId, fPosition, fTypeId } = entity;
     if (fTeamId) entity.teams_fId = fTeamId;
     if (fPosition) entity.positions_fId = fPosition;
-    if (fTypeId) entity.userPermission_fId = fTypeId;
-    
-		console.log(`TCL: entity`, entity);
+    if (fTypeId) entity.userPermission_fId = fTypeId;    
 
-    const affected = await userModel.modify(entity, {
+    // validate new total day-off
+    const fYear = moment().local().year();
+
+    const newYearTotal = entity.fYearTotal;
+
+    const settings = await settingModel.loadAll([], {
+      where: { fName: 'maxDayOff' }
+    });
+
+    const maxDayOff = settings[0].dataValues.fValue;
+
+    const selectedDayOff = await dayOffModel.loadAll({ 
+      fYearTotal, fYearUsed
+    }, {
+      where: {
+        fUserId: id,
+        fYear,
+      }
+    })
+
+    const { fYearTotal, fYearUsed } = selectedDayOff[0].dataValues;
+
+  if (newYearTotal > maxDayOff)
+      throw { msg: 'INVALID_DAY-OFF' }
+    
+    const affectedDayOff = await dayOffModel.modify({
+      fYearTotal: newYearTotal, fYearRemaining: newYearTotal - fYearUsed
+    }, {
+      where: {
+        fUserId: id,
+        fYear,
+      }
+    });
+    if (affectedDayOff[0] !== 1) throw { msg: 'DAY-OFF_NOT_FOUND' };
+
+    const affectedUser = await userModel.modify(entity, {
       where: { fId: id }
     });
-    if (affected[0] !== 1) throw { msg: 'USER_NOT_FOUND' };
+    if (affectedUser[0] !== 1) throw { msg: 'USER_NOT_FOUND' };
 
     handleSuccess(res, { user: entity });
   } catch (err) {
@@ -223,7 +258,7 @@ Router.get('/substitutes', async (req, res) => {
     //Find all user(s) in the same team with found team's Id
     const { fTeamId } = users[0].get({ plain: true });
     const substitutes = await userModel.loadAll(['fId', 'fFirstName', 'fLastName', 'fEmail'], {
-      where: { fTeamId: fTeamId }
+      where: { fTeamId }
     });
     
     if (!substitutes || substitutes.length < 1) {
@@ -303,7 +338,7 @@ Router.put('/changePassword', async (req, res) => {
   
     const fUserType = await getPermissionByUserId(ownUserId);
 
-    if (fUserType && fUserType === 'Admin' && ownUserId !== userId) { // admin đổi password user khác
+    if (fUserType && fUserType === 'Admin' && ownUserId !== userId) { // admin changes other's password
         const fPassword = sha256(newPassword);
   
         await userModel.modify({fPassword}, {
@@ -313,7 +348,7 @@ Router.put('/changePassword', async (req, res) => {
         res.status(200).json({
           success: true
         })
-    } else { //user or admin đổi pass chính mình
+    } else { //user or admin changes his/her own password
       const users = await userModel.loadAll([], { where: { fId: userId } });
       if(users.length && sha256(password) === users[0].dataValues.fPassword){
         const fPassword = sha256(newPassword);
@@ -336,6 +371,38 @@ Router.put('/changePassword', async (req, res) => {
     res.status(500).json({
       error: true
     })
+  }
+})
+
+Router.get('/day-off', async (req, res) => {
+  try {
+    let { userId } = req.query;
+    console.log("TCL: userId", userId)
+    // only Admin can view all; others can view oneself's
+    const fUserType = await getPermissionByToken(req.token_payload);
+    console.log("TCL: fUserType", fUserType)
+    if(fUserType !== 'Admin' && userId !== getIdFromToken(req.token_payload)) throw { code: 401, msg: 'NO_PERMISSION' };
+
+    if(!userId || 
+      (await getPermissionByToken(req.token_payload) !== 'Admin' && 
+      userId !== getIdFromToken(req.token_payload))) throw { msg: 'INVALID_QUERY' };
+    
+    const fYear = moment().local().year();
+    console.log("TCL: fYear", fYear)
+    
+    const dOEntity = await dayOffModel.loadAll({ fYearTotal, fYearUsed, fYearRemaining },
+      { where: { 
+        fUserId: userId,
+        fYear
+      } });
+
+    const { fYearTotal, fYearUsed, fYearRemaining } = dOEntity[0];
+    console.log("TCL: fYearTotal, fYearUsed, fYearRemaining", fYearTotal, fYearUsed, fYearRemaining);
+    
+    handleSuccess(res, { fYearTotal, fYearUsed, fYearRemaining });
+  }
+  catch(err) {
+    handleFailure(res, { err, route: req.originalUrl });
   }
 })
 

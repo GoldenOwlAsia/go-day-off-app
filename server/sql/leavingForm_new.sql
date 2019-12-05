@@ -35,7 +35,7 @@ CREATE TABLE `SequelizeMeta` (
 
 LOCK TABLES `SequelizeMeta` WRITE;
 /*!40000 ALTER TABLE `SequelizeMeta` DISABLE KEYS */;
-INSERT INTO `SequelizeMeta` VALUES ('20190904041603-create-booking.js');
+INSERT INTO `SequelizeMeta` VALUES ('20190904041603-create-booking.js'),('20191127085054-create-day-off.js'),('20191128025454-create-day-off.js');
 /*!40000 ALTER TABLE `SequelizeMeta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -90,6 +90,34 @@ CREATE TABLE `bookings` (
 LOCK TABLES `bookings` WRITE;
 /*!40000 ALTER TABLE `bookings` DISABLE KEYS */;
 /*!40000 ALTER TABLE `bookings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `dayOffs`
+--
+
+DROP TABLE IF EXISTS `dayOffs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `dayOffs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fUserId` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `fYear` int(11) DEFAULT NULL,
+  `fYearTotal` float DEFAULT NULL,
+  `fYearUsed` float DEFAULT NULL,
+  `fYearRemaining` float DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `dayOffs`
+--
+
+LOCK TABLES `dayOffs` WRITE;
+/*!40000 ALTER TABLE `dayOffs` DISABLE KEYS */;
+INSERT INTO `dayOffs` VALUES (2,'5g3bqeTgu6',2019,15,0,15);
+/*!40000 ALTER TABLE `dayOffs` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -289,7 +317,7 @@ CREATE TABLE `userRefToken` (
 
 LOCK TABLES `userRefToken` WRITE;
 /*!40000 ALTER TABLE `userRefToken` DISABLE KEYS */;
-INSERT INTO `userRefToken` VALUES ('5g3bqeTgu6','azmX89fDd0WDn8k3saDiJ9gI4BzPSTxZI6KauKg6wZD62YpsC5c8KQz1gkGbjoP6IPGNsBCc9Buljlw6','2019-11-21 11:45:22',NULL),('eAVJCmA07M','WzZMyxjyTgl1WCHP52jchm1cBU3f9BiyUEBaZCmLqEHamHgSDFCuGprcRfj3gkPlgGrOzOjkY5L877Mj','2019-11-21 12:01:04',NULL),('H8UIAdsy7T','xK2Pww9chNnebSEEsQCLQzqqVu6h6kriXL7GX558ierXJKJYM8VKnd6G77ltBKYvgJSZ8BOoQ7LQYFxu','2019-03-19 08:20:34',NULL);
+INSERT INTO `userRefToken` VALUES ('5g3bqeTgu6','VgxuWYKlCoD5OsLOW3UCEKLi0XZXGXKPZ0hhLJ6djlLHA2iN3vY2IZKEhJ9NrNjWFAhqYtpVfIo8kZQq','2019-11-29 02:19:13',NULL);
 /*!40000 ALTER TABLE `userRefToken` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -334,7 +362,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('4r5dtH76nj','User','GO','fbd79','0123456789','4c839','3sVfP','user@go.testor',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','user@go.testor',NULL,NULL,NULL),('5g3bqeTgu6','Admin','GO','fbd79','0123456789','2d61d','1J85n','admin@goldenowl.asia',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','admin@goldenowl.asia',NULL,NULL,NULL),('eAVJCmA07M','GO Dev','JavaScript','7e069','123456789','ae0cb','3sVfP','godevjs@mail',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','godevjs@mail','7e069','3sVfP','ae0cb'),('IrcGyyQtZg','GO Lead','JavaScript','fbd79','123456789','ae0cb','3sVfP','goleadjs@mail',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','goleadjs@mail','fbd79','3sVfP','ae0cb');
+INSERT INTO `users` VALUES ('5g3bqeTgu6','Admin','GO','fbd79','0123456789','2d61d','1J85n','admin@goldenowl.asia',2,'5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','admin@goldenowl.asia',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -347,4 +375,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-11-22  9:33:48
+-- Dump completed on 2019-12-02  9:30:52

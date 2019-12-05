@@ -30,7 +30,7 @@ import moment from 'moment';
 // Notification redux
 import { showNotification } from '../../redux/actions/notificationActions';
 import { NOTIF_ERROR, NOTIF_SUCCESS } from '../../constants/notification';
-// import { getDayOffSetting } from '../../apiCalls/settingAPIs';
+import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
 //ValidationSchema
 import ValidationSchema from './validationSchema';
@@ -112,17 +112,15 @@ class CreateNewAccount extends React.Component {
   state = {
     allTeams: [],
     allPositions: [],
-    // dayOffSetting: 0,
+    dayOffSetting: 0,
   };
 
-  // cancelSource = CancelToken.source();
+  cancelSource = CancelToken.source();
 
   componentDidMount = () => {
-    Axios.all([getAllTeams(), getAllPositions(), {/* getDayOffSetting(this.cancelSource.token) */ }])
+    Axios.all([getAllTeams(), getAllPositions(), getDayOffSetting(this.cancelSource.token)])
       .then(
-        Axios.spread((allTeamResponse, allPositionResponse
-          // , dayOffResponse
-        ) => {
+        Axios.spread((allTeamResponse, allPositionResponse, dayOffResponse) => {
           let allTeams = allTeamResponse.data.teams.map(item => ({
             value: item.fId,
             label: item.fTeamName
@@ -133,13 +131,13 @@ class CreateNewAccount extends React.Component {
             label: item.fPosName
           }));
 
-          // let dayOffSetting = dayOffResponse.data.settings[0].fValue;
+          let dayOffSetting = dayOffResponse.data.settings[0].fValue;
 
           this.setState(prevState => ({
             ...prevState,
             allTeams,
             allPositions,
-            // dayOffSetting
+            dayOffSetting
           }));
         })
       )
@@ -152,20 +150,16 @@ class CreateNewAccount extends React.Component {
     const {
       allPositions,
       allTeams,
-      // dayOffSetting 
+      dayOffSetting 
     } = this.state;
+
+    initialValues.dayOff = dayOffSetting;
 
     return (
       <DashContainer className={classes.layout}>
         <Paper className={classes.paper}>
           <CssBaseline />
           <Formik
-            validate={values => {
-              let errors = {};
-              // if (values.rawPwd.length < x) // comment for now
-              if (values.rawConFirmPwd !== values.rawPwd) errors.rawConFirmPwd = 'Confirm password does not match';
-              // if (isNaN(values.daysOff)) errors.daysOff = 'Must be a number'
-            }}
             validationSchema={ValidationSchema}
             initialValues={initialValues}
             onSubmit={(values, actions) => {
@@ -540,14 +534,14 @@ class CreateNewAccount extends React.Component {
                         />
                       </Grid> */}
                       {/** day-off  */}
-                      {/* <Grid item xs={12} sm={6}>
+                      <Grid item xs={12} sm={6}>
                         <Field
-                          name="daysOff"
+                          name="dayOff"
                           render={({ field, form, ...otherProps }) => {
                             return (
                               <TextField
                                 fullWidth
-                                label="Remaining Days-off"
+                                label="Remaining day-off"
                                 type="number"
                                 inputProps={{ min: 0, max: dayOffSetting, step: 1 }}
                                 value={field.value}
@@ -557,7 +551,18 @@ class CreateNewAccount extends React.Component {
                             );
                           }}
                         />
-                      </Grid> */}
+                        <ErrorMessage name="dayOff">
+                          {msg => (
+                            <div style={{
+                              color: 'red',
+                              fontSize: 12,
+                              fontWeight: 500
+                            }}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
+                      </Grid>
                     </Grid>
                   </React.Fragment>
                   <React.Fragment>
@@ -615,7 +620,7 @@ CreateNewAccount.defaultProps = {
     phone: '',
     teamId: '',
     email: '',
-    typeId: responseUserPermission['USER']
+    typeId: responseUserPermission['USER'],
   }
 };
 

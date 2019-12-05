@@ -35,7 +35,8 @@ import {
   getAllSubsitutes,  
 } from '../../apiCalls/userAPIs';
 import { getDayOffSetting } from '../../apiCalls/settingAPIs';
-import { createLeaveLetter, getUsedDayOff } from '../../apiCalls/leaveLetterAPI';
+import { createLeaveLetter } from '../../apiCalls/leaveLetterAPI';
+import { getDayOff } from '../../apiCalls/userAPIs';
 
 // Notification redux
 import {
@@ -162,10 +163,10 @@ class AbsenceLetterWithFormik extends React.Component {
       });
 
     //Load usedDayOff
-    getUsedDayOff(this.cancelSource.token, getUserId()).then(res=>{
+    getDayOff(this.cancelSource.token, getUserId()).then(res => {
       let usedDayOff = '-';
       if (res.data.success) {
-        usedDayOff = res.data.numOffDays;
+        usedDayOff = res.data.fYearUsed;
       }
 
       this.__isMounted && this.setState({ usedDayOff });

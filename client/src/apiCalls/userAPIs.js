@@ -58,6 +58,7 @@ export const updateProfile = (userId, profileEntity, cancelToken = undefined) =>
     gender: profileEntity.fGender,
     teamId: profileEntity.fTeamId,
     position: profileEntity.fPosition,
+    yearTotal: profileEntity.fYearTotal,
   };
   
   return axios.patch(
@@ -109,7 +110,8 @@ export const getAllSubsitutesByUserId = (userId, cancelToken = undefined) => {
   return axios.get(`${SERVER_HOST_DEV}/user/substitutes?id=${userId}`, {
     headers: {
       'x-access-token': getCookie(ACCESS_TOKEN_KEY)
-    }
+    },
+    cancelToken
   });
 };
 
@@ -120,3 +122,13 @@ export const getUsersList = (size = 10, page = 1, cancelToken = undefined) =>
     },
     cancelToken
 });
+
+export const getDayOff = (cancelToken = undefined, userId) => {
+  const url = `${SERVER_HOST_DEV}/user/day-off?userId=${userId}`;
+  return axios.get(url, {
+    headers: {
+      'x-access-token': getCookie(ACCESS_TOKEN_KEY)
+    },
+    cancelToken
+  });
+} 

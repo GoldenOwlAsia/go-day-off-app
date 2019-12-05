@@ -47,12 +47,13 @@ import ValidationSchema from './validationSchema';
 import Axios, { CancelToken } from 'axios';
 import { getAllTeams, getAllPositions } from '../../apiCalls/supportingAPIs';
 import { getProfile, updateProfile } from '../../apiCalls/userAPIs';
-import { getMyLeaveLetters, getUsedDayOff, getDemandLetterByFilter } from "../../apiCalls/leaveLetterAPI";
+import { getMyLeaveLetters, getDemandLetterByFilter } from "../../apiCalls/leaveLetterAPI";
+import { getDayOff } from '../../apiCalls/userAPIs';
+import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
 //Notif redux
 import { NOTIF_ERROR, NOTIF_SUCCESS, USER_LEFT_PAGE } from '../../constants/notification';
 import { showNotification } from '../../redux/actions/notificationActions';
-import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -108,22 +109,25 @@ class EditAccountInfo extends React.Component {
   }
 
   loadUsedDayOffInfo = () => {
-    //Load usedDayOff
-    Axios.all([getUsedDayOff(this.cancelSource.token, this.state.demandUserId), getDayOffSetting(this.cancelSource.token)])
+    //Load dayOffRemaining
+    Axios.all([getDayOff(this.cancelSource.token, this.state.demandUserId), getDayOffSetting(this.cancelSource.token)])
       .then(
-        Axios.spread((usedDayOffRepsonse, dayOffSettingResponse) => {
-          let usedDayOff = '-', dayOffSetting = '-';
-          if (usedDayOffRepsonse.data.success) {
-            usedDayOff = usedDayOffRepsonse.data.numOffDays;
+        Axios.spread((dayOffRes, settingRes) => {
+          let dayOffRemaining = '-', dayOffTotal = '-', dayOffSetting = 0;
+          if (dayOffRes.data.success) {
+            dayOffRemaining = dayOffRes.data.fYearRemaining;
+            dayOffTotal = dayOffRes.data.fYearTotal;
           }
-          if (dayOffSettingResponse.data.success) {
-            const { settings } = dayOffSettingResponse.data;
+
+          if (settingRes.data.success) {
+            const { settings } = settingRes.data;
             dayOffSetting = settings[0].fValue;
           }
           this.__isMounted && this.setState(prevState => ({
             ...prevState,
-            usedDayOff,
-            dayOffSetting
+            dayOffRemaining,
+            dayOffTotal,
+            dayOffSetting,
           }));
         })
       )
@@ -198,8 +202,9 @@ class EditAccountInfo extends React.Component {
 
   render() {
     const { classes, handleShowNotif } = this.props;
-    const { user, editMode, allTeams, allPositions, demandUserId, usedDayOff, dayOffSetting } = this.state;
-    const remainingDayOff = dayOffSetting - usedDayOff;
+    const { user, editMode, allTeams, allPositions, demandUserId, dayOffRemaining, dayOffTotal, dayOffSetting } = this.state;
+
+    user.fYearTotal = dayOffTotal;
 
     const { userId, userType } = getUserEntity();
     const isCurrentLoggedInUser = (userId === demandUserId);
@@ -539,6 +544,36 @@ class EditAccountInfo extends React.Component {
                             </React.Fragment>
                           )}
                         </Grid>
+                        {/** day-off  */}
+                        <Grid item xs={12} sm={6}>
+                          <Field
+                            name="fYearTotal"
+                            render={({ field, form, ...otherProps }) => {
+                              return (
+                                <TextField
+                                  fullWidth
+                                  label="Remaining day-off"
+                                  type="number"
+                                  inputProps={{ min: 0, max: dayOffSetting, step: 0.5 }}
+                                  value={field.value}
+                                  name={field.name}
+                                  onChange={handleChange}
+                                />
+                              );
+                            }}
+                          />
+                          <ErrorMessage name="dayOff">
+                            {msg => (
+                              <div style={{
+                                color: 'red',
+                                fontSize: 12,
+                                fontWeight: 500
+                              }}>
+                                {msg}
+                              </div>
+                            )}
+                          </ErrorMessage>
+                        </Grid>
                       </React.Fragment>
                       <React.Fragment>
                         {/* Bottom buttons */}
@@ -714,7 +749,7 @@ class EditAccountInfo extends React.Component {
                     <Grid item xs={12} sm={6}>
                       <div className={classes.fieldTitle}>
                         Remaining day-off:
-                      <span className={classes.fieldValue}>{` ${remainingDayOff}/${dayOffSetting} (this year)`}</span>
+                      <span className={classes.fieldValue}>{` ${dayOffRemaining}/${dayOffTotal} (this year)`}</span>
                       </div>
                     </Grid>
                   </Grid>
