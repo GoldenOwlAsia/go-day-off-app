@@ -32,6 +32,9 @@ import { showNotification } from '../../redux/actions/notificationActions';
 import { NOTIF_ERROR, NOTIF_SUCCESS } from '../../constants/notification';
 import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 
+//ValidationSchema
+import ValidationSchema from './validationSchema';
+
 const mapDispatchToProps = dispatch => {
   return {
     handleShowNotif: (type, message) =>
@@ -75,7 +78,8 @@ const styles = theme => ({
     justifyContent: 'flex-end',
     marginTop: theme.spacing.unit * 6,
     [theme.breakpoints.up('sm')]: {
-      display: 'none'
+      display: 'flex',
+      justifyContent: 'flex-end',
     },
     [theme.breakpoints.down('xs')]: {
       display: 'flex'
@@ -96,7 +100,12 @@ const styles = theme => ({
   },
   formTitle: {
     marginBottom: theme.spacing.unit * 3
-  }
+  },
+  errorMessage: {
+    color: 'red',
+    fontSize: 12,
+    fontWeight: 500
+  },
 });
 
 class CreateNewAccount extends React.Component {
@@ -151,6 +160,7 @@ class CreateNewAccount extends React.Component {
         <Paper className={classes.paper}>
           <CssBaseline />
           <Formik
+            validationSchema={ValidationSchema}
             initialValues={initialValues}
             onSubmit={(values, actions) => {
               //Call api update here
@@ -178,6 +188,7 @@ class CreateNewAccount extends React.Component {
               isSubmitting,
               handleReset,
               handleSubmit,
+              handleBlur,
               setFieldValue,
               handleChange,
               ...formikProps
@@ -185,7 +196,7 @@ class CreateNewAccount extends React.Component {
               return (
                 <Form>
                   {/* Top buttons */}
-                  <React.Fragment>
+                  {/* <React.Fragment>
                     <Grid
                       item
                       container
@@ -227,7 +238,7 @@ class CreateNewAccount extends React.Component {
                         )}
                       />
                     </Grid>
-                  </React.Fragment>
+                  </React.Fragment> */}
                   {/* End - Top buttons */}
                   <React.Fragment>
                     <Typography
@@ -253,10 +264,18 @@ class CreateNewAccount extends React.Component {
                                 name={field.name}
                                 value={field.value}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name='firstName'>
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** Last name */}
                       <Grid item xs={12} sm={6}>
@@ -270,10 +289,18 @@ class CreateNewAccount extends React.Component {
                                 name={field.name}
                                 value={field.value}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name='lastName'>
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** gender */}
                       <Grid item xs={12} sm={6}>
@@ -287,13 +314,21 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 options={mockup_gender}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name='gender'>
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** birthday */}
-                      <Grid item xs={12} sm={6}>
+                      {/* <Grid item xs={12} sm={6}>
                         <Field
                           fullWidth
                           name="bday"
@@ -301,7 +336,7 @@ class CreateNewAccount extends React.Component {
                           enablePast
                           component={DatePickerField}
                         />
-                      </Grid>
+                      </Grid> */}
                       {/** phone number  */}
                       <Grid item xs={12} sm={6}>
                         <Field
@@ -314,10 +349,18 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name='phone'>
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** email  */}
                       <Grid item xs={12} sm={6}>
@@ -331,10 +374,18 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name='email'>
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** rawPwd  */}
                       <Grid item xs={12} sm={6}>
@@ -349,13 +400,21 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name="rawPwd">
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** rawConfirmPwd  */}
-                      {/* <Grid item xs={12} sm={6}>
+                      <Grid item xs={12} sm={6}>
                         <Field
                           name="rawConfirmPwd"
                           render={({ field, form, ...otherProps }) => {
@@ -367,24 +426,21 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
                         <ErrorMessage name="rawConfirmPwd">
                           {msg => (
-                            <div style={{ 
-                              color: 'red',
-                              fontSize: 12,
-                              fontWeight: 500
-                              }}>
-                                {msg}
+                            <div className={classes.errorMessage}>
+                              {msg}
                             </div>
                           )}
                         </ErrorMessage>
-                      </Grid> */}
+                      </Grid>
                       {/** address  */}
-                      <Grid item xs={12} sm={6}>
+                      {/* <Grid item xs={12} sm={6}>
                         <Field
                           name="address"
                           render={({ field, form, ...otherProps }) => {
@@ -396,11 +452,19 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 name={field.name}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
-                      </Grid>
+                        <ErrorMessage name="address">
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
+                      </Grid> */}
                       {/* team name */}
                       <Grid item xs={12} sm={6}>
                         <Field
@@ -413,10 +477,18 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 options={allTeams}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name="teamId">
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** position name */}
                       <Grid item xs={12} sm={6}>
@@ -430,10 +502,18 @@ class CreateNewAccount extends React.Component {
                                 value={field.value}
                                 options={allPositions}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                               />
                             );
                           }}
                         />
+                        <ErrorMessage name="position">
+                          {msg => (
+                            <div className={classes.errorMessage}>
+                              {msg}
+                            </div>
+                          )}
+                        </ErrorMessage>
                       </Grid>
                       {/** username  */}
                       {/* <Grid item xs={12} sm={6}>

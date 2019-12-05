@@ -208,8 +208,8 @@ class EditAccountInfo extends React.Component {
 
     const { userId, userType } = getUserEntity();
     const isCurrentLoggedInUser = (userId === demandUserId);
-    const isHrSession = userTypes.MODE_ADMIN === userType;
-    const isShowLetterList = (isHrSession && !isCurrentLoggedInUser && typeof (demandUserId) !== 'undefined');
+    const isAdminSession = userTypes.MODE_ADMIN === userType;
+    const isShowLetterList = (isAdminSession && !isCurrentLoggedInUser && typeof (demandUserId) !== 'undefined');
 
     return (
       <DashContainer className={classes.layout}>
@@ -230,7 +230,7 @@ class EditAccountInfo extends React.Component {
           </Paper>
           :
           <Paper className={classes.paper}>
-            {editMode && isHrSession ? (
+            {editMode && isAdminSession ? (
               <Formik
                 initialValues={user}
                 validationSchema={ValidationSchema}
@@ -267,7 +267,7 @@ class EditAccountInfo extends React.Component {
                   return (
                     <Form>
                       {/* Top buttons */}
-                      <React.Fragment>
+                      {/* <React.Fragment>
                         <Grid
                           item
                           container
@@ -324,7 +324,7 @@ class EditAccountInfo extends React.Component {
                               )}
                           </Button>
                         </Grid>
-                      </React.Fragment>
+                      </React.Fragment> */}
                       {/* End - Top buttons */}
                       <React.Fragment>
                         <Typography
@@ -399,11 +399,19 @@ class EditAccountInfo extends React.Component {
                                     label="Gender"
                                     value={field.value}
                                     options={mockupGender}
+                                    onBlur={handleBlur}
                                     onChange={handleChange}
                                   />
                                 );
                               }}
                             />
+                            <ErrorMessage name='fGender'>
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
                           </Grid>
                           {/** fEmail  */}
                           <Grid item xs={12} sm={6}>
@@ -455,7 +463,33 @@ class EditAccountInfo extends React.Component {
                               )}
                             </ErrorMessage>
                           </Grid>
-                          {!isHrSession ? null : (
+                          {/** address  */}
+                          {/* <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fAddress"
+                              render={({ field, form, ...otherProps }) => {
+                                return (
+                                  <TextField
+                                    multiline
+                                    fullWidth
+                                    label="Address"
+                                    value={field.value}
+                                    name={field.name}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                  />
+                                );
+                              }}
+                            />
+                            <ErrorMessage name="fAddress">
+                              {msg => (
+                                <div className={classes.errorMessage}>
+                                  {msg}
+                                </div>
+                              )}
+                            </ErrorMessage>
+                          </Grid> */}
+                          {!isAdminSession ? null : (
                             <React.Fragment>
                               {/** fTeamName name */}
                               <Grid item xs={12} sm={6}>
@@ -468,11 +502,19 @@ class EditAccountInfo extends React.Component {
                                         label="Team"
                                         value={field.value}
                                         options={allTeams}
+                                        onBlur={handleBlur}
                                         onChange={handleChange}
                                       />
                                     );
                                   }}
                                 />
+                                <ErrorMessage name='fTeamId'>
+                                  {msg => (
+                                    <div className={classes.errorMessage}>
+                                      {msg}
+                                    </div>
+                                  )}
+                                </ErrorMessage>
                               </Grid>
                               {/** fPositionName name */}
                               <Grid item xs={12} sm={6}>
@@ -485,11 +527,19 @@ class EditAccountInfo extends React.Component {
                                         label="Position"
                                         value={field.value}
                                         options={allPositions}
+                                        onBlur={handleBlur}
                                         onChange={handleChange}
                                       />
                                     );
                                   }}
                                 />
+                                <ErrorMessage name='fPosition'>
+                                  {msg => (
+                                    <div className={classes.errorMessage}>
+                                      {msg}
+                                    </div>
+                                  )}
+                                </ErrorMessage>
                               </Grid>
                             </React.Fragment>
                           )}
@@ -596,7 +646,7 @@ class EditAccountInfo extends React.Component {
                       </Button>
                     </Link>
                     }
-                    {isHrSession ? (
+                    {isAdminSession ? (
                       <Button
                         className={classes.button}
                         size="small"
@@ -666,6 +716,15 @@ class EditAccountInfo extends React.Component {
                           }`}</span>
                       </div>
                     </Grid>
+                    {/* Address */}
+                    {/* <Grid item xs={12} sm={6}>
+                      <div className={classes.fieldTitle}>
+                        Address:
+                        <span className={classes.fieldValue}>{` ${
+                          user.fAddress
+                          }`}</span>
+                      </div>
+                    </Grid> */}
                   </Grid>
                   <Grid container spacing={16} className={classes.groupInfo}>
                     {/* Position name */}
@@ -752,7 +811,7 @@ const styles = theme => ({
     justifyContent: 'flex-end',
     marginTop: theme.spacing.unit * 6,
     [theme.breakpoints.up('sm')]: {
-      display: 'none'
+      display: 'flex'
     },
     [theme.breakpoints.down('xs')]: {
       display: 'flex'
