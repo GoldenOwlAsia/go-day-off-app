@@ -84,20 +84,23 @@ class Calendar extends React.Component {
   setEvents = async () => {
     const { isAdmin, cancelSource } = this;
     const { selectedDate } = this.state;
-    const selectedMonth = selectedDate.month() + 1;
-    const selectedYear = selectedDate.year();
-    const nextSelectedDate = moment(selectedDate).add(1, 'month');
-    const nextSelectedMonth = nextSelectedDate.month() + 1;
-    const nextSelectedYear = nextSelectedDate.year();
+    const fromDate = moment(selectedDate).startOf('month').subtract(1, 'day');
+    const fromDay = fromDate.date();
+    const fromMonth = fromDate.month() + 1;
+    const fromYear = fromDate.year();
+    const toDate = moment(selectedDate).endOf('month').add(1, 'day');
+    const toDay = toDate.date();
+    const toMonth = toDate.month() + 1;
+    const toYear = toDate.year();
 
     const filterData = {
       userId: getUserId(),
-      fromDay: 1,
-      fromMonth: selectedMonth,
-      fromYear: selectedYear,
-      toDay: 1,
-      toMonth: nextSelectedMonth,
-      toYear: nextSelectedYear,
+      fromDay,
+      fromMonth,
+      fromYear,
+      toDay,
+      toMonth,
+      toYear,
       size: 0,
     }
 
