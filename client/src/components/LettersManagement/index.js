@@ -236,7 +236,7 @@ class LetterManagement extends Component {
       columns: type === userTypes.MODE_ADMIN ? AdminColumns : defaultColumns,
       title: <Typography component='p' variant='h5' className={classes.title}> {title} </Typography>,
       data: Array.isArray(letters)
-        ? letters.map(({ fUserFullName, fFromDT, fFromOpt, fToDT, fToOpt, fStatus, fId, fRdt, fRejectType }) => {
+        ? letters.map(({ fUserFullName, fUserNickName, fFromDT, fToDT, fStatus, fId, fRdt, fRejectType }) => {
           const dataSet = [
             fId,
             getDate(fRdt),
@@ -244,7 +244,7 @@ class LetterManagement extends Component {
             getDate(fToDT),
             fRejectType && fRejectType === REJECT_TYPE.BY_SELF? `CANCELED` : letterStatusText[fStatus],
           ];
-          if (type === userTypes.MODE_ADMIN) dataSet.splice(1, 0, fUserFullName || 'Unknown');
+          if (type === userTypes.MODE_ADMIN) dataSet.splice(1, 0, `${fUserFullName} ${fUserNickName? `(${fUserNickName})` : ''}` || 'Unknown');
           return dataSet;
         }) : [],
       options: {
@@ -281,14 +281,6 @@ class LetterManagement extends Component {
             useDisplayedColumnsOnly: true,
           }
        },
-        // setTableProps: () => {
-        //   return {
-        //     style: {
-        //       color: 'rgba(0, 0, 0, 0.50)',
-        //       fontWeight: 'bold',
-        //     }
-        //   }
-        // }
       }
     };
 

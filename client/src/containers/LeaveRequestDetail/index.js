@@ -18,9 +18,10 @@ import emailjs from 'emailjs-com';
 // icons
 import {
   ArrowBackIosOutlined as ArrowBackIcon,
-  DoneOutlined as DoneIcon,
+  // DoneOutlined as DoneIcon,
   RemoveCircleOutline as RemoveCircleIcon
 } from '@material-ui/icons';
+import DoneOutlineOutlinedIcon from '@material-ui/icons/DoneOutlineOutlined';
 
 //components
 import RequestStatusPill from '../../components/RequestStatusPill';
@@ -89,15 +90,18 @@ class LeaveRequestDetail extends React.Component {
   // send email
   sendApprovedEmail = (user, letter) => {
     const fullName = `${user.fFirstName} ${user.fLastName}`;
+    const nickName = `${user.fNickName} `;
     const startDate = letter.fFromDT.toString().substring(0, 10);
     const startSession = letter.fFromOpt === 'afternoon' ? '(afternoon)' : '';
     const endDate = letter.fToDT.toString().substring(0, 10);
     const endSession = letter.fToOpt === 'morning' ? '(morning)' : '';
     const leaveReason = letter.fReason;
+    const to_email = user.fEmail;
 
     const emailParams = {
-      to_email: 'phamtrongan@outlook.com ',
+      to_email: 'celine@goldenowl.asia',
       fullName,
+      nickName,
       startDate,
       startSession,
       endDate,
@@ -108,18 +112,35 @@ class LeaveRequestDetail extends React.Component {
     return emailjs.send('gmail', 'goleavesapprove', emailParams, EMAILJS_ADMIN_ID);
   }
 
-  sendRejectedEmail = (user, letter, rejectReason) => {
+  sendRejectedEmail = async (user, letter, rejectReason) => {
     const { demandUser } = this.state;
     const fullName = `${user.fFirstName} ${user.fLastName}`;
+    const nickName = `${user.fNickName} `;
     const startDate = letter.fFromDT.toString().substring(0, 10);
     const startSession = letter.fFromOpt === 'afternoon' ? '(afternoon)' : '';
     const endDate = letter.fToDT.toString().substring(0, 10);
     const endSession = letter.fToOpt === 'morning' ? '(morning)' : '';
     const leaveReason = letter.fReason;
 
+    let response = await getProfile(letter.fApprover);
+    let {
+      status: statusApprover,
+      data: { success: successApprover, user: approverInfo }
+    } = response;
+    if(statusApprover !== 200 || successApprover !== true || !approverInfo) return;
+    const approverEmail = approverInfo.fEmail;
+
+
+    const to_email = demandUser.fTypeId === responseUserPermission.ADMIN ?
+                      // user.fEmail :
+                      'celine@goldenowl.asia':
+                      'celine@goldenowl.asia';
+                      // approverEmail;
+
     const emailParams = {
-      to_email: 'phamtrongan@outlook.com ',
+      to_email,
       fullName,
+      nickName,
       startDate,
       startSession,
       endDate,
@@ -240,9 +261,10 @@ class LeaveRequestDetail extends React.Component {
             validate={(values) => {
               let errors = {};
               if (rejectDialogOpen) {
-                if (values.rejectReason.length < 20  ) 
-                  errors.rejectReason = `'Reject reason' can't be less than 20 characters`;
-                else if (values.rejectReason.length > 250 )
+                // if (values.rejectReason.length < 20  ) 
+                //   errors.rejectReason = `'Reject reason' can't be less than 20 characters`;
+                // else 
+                if (values.rejectReason.length > 250 )
                   errors.rejectReason = `'Reject reason' can't be more than 250 characters`;
               }
               return errors;
@@ -292,9 +314,9 @@ class LeaveRequestDetail extends React.Component {
                         <Grid item xs={12} className={classes.fieldWrapper}>
                           <div className={classes.fieldTitle}>
                             Creator:
-                            <span className={classes.fieldValue}>{ (!userInfo.fFirstName && !userInfo.fLastName) ? null : ` ${
-                              userInfo.fFirstName
-                            } ${userInfo.fLastName}`}</span>
+                            <span className={classes.fieldValue}>{ (!userInfo.fFirstName && !userInfo.fLastName) ? 
+                            '' : 
+                            ` ${userInfo.fFirstName} ${userInfo.fLastName} ${userInfo.fNickName? `(${userInfo.fNickName})` : ''}`}</span>
                           </div>
                         </Grid>
                         {/** CURRENT POSITION */}
@@ -422,7 +444,7 @@ class LeaveRequestDetail extends React.Component {
                                 color="primary"
                                 disabled={isSubmitting}
                               >
-                                <DoneIcon />
+                                <DoneOutlineOutlinedIcon className={classes.leftIcon}/>
                                 Approve
                               </ConfirmButton>
                             )}

@@ -8,17 +8,19 @@ import {
   LEAVE_TYPE_PERSONNEL,
   LEAVE_TYPE_ANNUAL,
   LEAVE_TYPE_SICKNESS,
-  LEAVE_TYPE_POLICY
+  LEAVE_TYPE_POLICY,
+  LEAVE_TYPE_TRAVEL
 } from "../constants/leaveTypes";
 
 import PropTypes from "prop-types";
 
 //Constants
 const leaveTypesDescription = {
-  [LEAVE_TYPE_PERSONNEL]: "Việc cá nhân",
+  [LEAVE_TYPE_PERSONNEL]: "Việc gia đình",
   [LEAVE_TYPE_SICKNESS]: "Nghỉ ốm",
   [LEAVE_TYPE_ANNUAL]: "Nghỉ phép năm",
-  [LEAVE_TYPE_POLICY]: "Nghỉ chế độ"
+  [LEAVE_TYPE_POLICY]: "Nghỉ chế độ",
+  [LEAVE_TYPE_TRAVEL]: "Du lịch",
 };
 const leaveReqStatusDescription = {
   [LEAVE_REQUEST_PENDING]: "Pending",

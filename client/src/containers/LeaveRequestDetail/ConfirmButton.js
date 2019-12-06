@@ -35,16 +35,16 @@ const ConfirmButton = ({ onAgree, ...props }) => {
         aria-labelledby="alert-dialog-slide-title"
         aria-describedby="alert-dialog-slide-description"
       >
-        <DialogTitle id="alert-dialog-slide-title">ARE YOU SURE</DialogTitle>
+        <DialogTitle id="alert-dialog-slide-title">ARE YOU SURE?</DialogTitle>
         <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            NO
+          </Button>
           <Button onClick={() => {
             handleClose();
             onAgree();
             }} color="primary">
-            YES, I'M SURE
-          </Button>
-          <Button onClick={handleClose} color="primary">
-            NO, WAIT A SECOND
+            YES
           </Button>
         </DialogActions>
       </Dialog>

@@ -261,8 +261,9 @@ class EditAccountInfo extends React.Component {
                   handleReset,
                   handleSubmit,
                   handleBlur,
-                  handleChange
-                }) => {
+                  handleChange,
+                  ...formikProps
+                  }) => {
                   const isUserInfoChanged = !compareJsonObjectValue(values, user);
                   return (
                     <Form>
@@ -279,7 +280,10 @@ class EditAccountInfo extends React.Component {
                             size="small"
                             color="primary"
                             variant="contained"
-                            onClick={handleSubmit}
+                            onClick={() => {
+                              console.log('click');
+                              handleSubmit();
+                            }}
                             disabled={isSubmitting || !isUserInfoChanged}
                           >
                             <Icon
@@ -388,7 +392,24 @@ class EditAccountInfo extends React.Component {
                               )}
                             </ErrorMessage>
                           </Grid>
-                          {/** Gender name */}
+                          {/** Nick name */}
+                          <Grid item xs={12} sm={6}>
+                            <Field
+                              name="fNickName"
+                              render={({ field }) => {
+                                return (
+                                  <TextField
+                                    fullWidth
+                                    label="Nick name"
+                                    name={field.name}
+                                    value={field.value}
+                                    onChange={handleChange}
+                                  />
+                                );
+                              }}
+                            />
+                          </Grid>
+                          {/** Gender */}
                           <Grid item xs={12} sm={6}>
                             <Field
                               name="fGender"
@@ -541,52 +562,57 @@ class EditAccountInfo extends React.Component {
                                   )}
                                 </ErrorMessage>
                               </Grid>
+                              {/** day-off  */}
+                              <Grid item xs={12} sm={6}>
+                                <Field
+                                  name="fYearTotal"
+                                  render={({ field, form, ...otherProps }) => {
+                                    return (
+                                      <TextField
+                                        fullWidth
+                                        label="Remaining day-off"
+                                        type="number"
+                                        inputProps={{ min: 0, max: dayOffSetting, step: 0.5 }}
+                                        value={field.value}
+                                        name={field.name}
+                                        onKeyPress={e => e.preventDefault()}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                      />
+                                    );
+                                  }}
+                                />
+                                <ErrorMessage name="fYearTotal">
+                                  {msg => (
+                                    <div style={{
+                                      color: 'red',
+                                      fontSize: 12,
+                                      fontWeight: 500
+                                    }}>
+                                      {msg}
+                                    </div>
+                                  )}
+                                </ErrorMessage>
+                              </Grid>
                             </React.Fragment>
                           )}
                         </Grid>
-                        {/** day-off  */}
-                        <Grid item xs={12} sm={6}>
-                          <Field
-                            name="fYearTotal"
-                            render={({ field, form, ...otherProps }) => {
-                              return (
-                                <TextField
-                                  fullWidth
-                                  label="Remaining day-off"
-                                  type="number"
-                                  inputProps={{ min: 0, max: dayOffSetting, step: 0.5 }}
-                                  value={field.value}
-                                  name={field.name}
-                                  onChange={handleChange}
-                                />
-                              );
-                            }}
-                          />
-                          <ErrorMessage name="dayOff">
-                            {msg => (
-                              <div style={{
-                                color: 'red',
-                                fontSize: 12,
-                                fontWeight: 500
-                              }}>
-                                {msg}
-                              </div>
-                            )}
-                          </ErrorMessage>
-                        </Grid>
                       </React.Fragment>
                       <React.Fragment>
-                        {/* Bottom buttons */}
-                        <Grid item xs={12} className={classes.buttonGroupBottom}>
-                          <Button
+                      {/* Bottom buttons */}
+                      <Grid item xs={12} className={classes.buttonGroupBottom}>
+                        <Button
+                            className={classes.button}
                             size="small"
                             color="primary"
                             variant="contained"
                             onClick={handleSubmit}
                             disabled={isSubmitting || !isUserInfoChanged}
-                            className={classes.button}
                           >
-                            <Icon fontSize="small" className={classes.leftIcon}>
+                            <Icon
+                              fontSize="small"
+                              className={classes.leftIcon}
+                            >
                               save
                               </Icon>
                             SAVE
@@ -659,7 +685,6 @@ class EditAccountInfo extends React.Component {
                       </Button>
                     ) : null}
                   </div>
-
                   {/* Title */}
                   <Typography component="h1" variant="h4">
                     {isCurrentLoggedInUser ? 'My Profile' : `${user.fFirstName}'s Profile`}
@@ -686,6 +711,15 @@ class EditAccountInfo extends React.Component {
                         Last name:
                         <span className={classes.fieldValue}>{` ${
                           user.fLastName
+                          }`}</span>
+                      </div>
+                    </Grid>
+                    {/* Nick name  */}
+                    <Grid item xs={12} sm={6} className={classes.fieldWrapper}>
+                      <div className={classes.fieldTitle}>
+                        Nick name:
+                        <span className={classes.fieldValue}>{` ${
+                          user.fNickName ? user.fNickName : 'none'
                           }`}</span>
                       </div>
                     </Grid>

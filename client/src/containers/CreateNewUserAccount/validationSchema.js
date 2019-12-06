@@ -36,8 +36,6 @@ const YupValidationSchema = Yup.object().shape({
           .string()
           .required(`Please confirm your password`)
           .oneOf([Yup.ref("rawPwd"), null], "Passwords must match"),
-//   address:  Yup.string()
-//           .required(`"Address" can't be empty`),
   position: Yup.string()
           .required(`"Position" can't be empty`),
   teamId: Yup.string()
@@ -46,6 +44,8 @@ const YupValidationSchema = Yup.object().shape({
           .moreThan(0, `Must select "Gender"`)
           .lessThan(4, `Invalid gender`)
           .integer(`Invalid gender`),
+  dayOff: Yup.number()
+          .required(`"Day-off" can't be empty`)
 });
 
 export default YupValidationSchema;

@@ -25,18 +25,8 @@ const YupValidationSchema = Yup.object().shape({
           .max(10, `"Phone number" must be 10-character string`)
           .matches(PHONE_PATTERN, `"Phone number" is invalid`)
           .required(`"Phone number" can't be empty`),
-  fAddress: Yup.string()
-          .required(`"Address" can't be empty`),
-  fPosition: Yup.string()
-          .required(`"Position" can't be empty`),
-  fTeamId: Yup.string()
-          .required(`"Team" can't be empty`),
-  fGender: Yup.number()
-          .moreThan(0, `Invalid gender`)
-          .lessThan(4, `Invalid gender`)
-          .integer(`Invalid gender`),
-//   fAddress:  Yup.string()
-//           .required(`"Address" can't be empty`),
+  fYearTotal: Yup.number()
+          .required(`"Day-off" can't be empty`)
 });
 
 export default YupValidationSchema;

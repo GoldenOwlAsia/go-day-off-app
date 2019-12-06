@@ -25,6 +25,10 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING(30),
         allowNull: false
       },
+      fNickName: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+      },
       fPosition: {
         type: DataTypes.STRING(5),
         allowNull: false
@@ -58,6 +62,10 @@ export default (sequelize, DataTypes) => {
         values: USER_GENDER_VALUES,
         allowNull: false,
         defaultValue: 3
+      },
+      fActive: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
       },
       userPermission_fId: {
         type: DataTypes.STRING(5)
@@ -93,12 +101,14 @@ export default (sequelize, DataTypes) => {
     "fFirstName",
     "fPassword",
     "fLastName",
+    "fNickName",
     "fPhone",
     "fPosition",
     "fTeamId",
     "fTypeId",
     "fUsername",
-    "fGender"
+    "fGender",
+    "fActive",
   ];
   const publicFields = permittedFields.filter(field => field === "fPassword");
 

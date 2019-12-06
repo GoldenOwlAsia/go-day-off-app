@@ -302,6 +302,23 @@ class CreateNewAccount extends React.Component {
                           )}
                         </ErrorMessage>
                       </Grid>
+                      {/** nick name */}
+                      <Grid item xs={12} sm={6}>
+                        <Field
+                          name="nickName"
+                          render={({ field, form, ...otherProps }) => {
+                            return (
+                              <TextField
+                                fullWidth
+                                label="Nick name"
+                                name={field.name}
+                                value={field.value}
+                                onChange={handleChange}
+                              />
+                            );
+                          }}
+                        />
+                      </Grid>
                       {/** gender */}
                       <Grid item xs={12} sm={6}>
                         <Field
@@ -543,9 +560,11 @@ class CreateNewAccount extends React.Component {
                                 fullWidth
                                 label="Remaining day-off"
                                 type="number"
-                                inputProps={{ min: 0, max: dayOffSetting, step: 1 }}
+                                inputProps={{ min: 0, max: dayOffSetting, step: 0.5 }}
                                 value={field.value}
                                 name={field.name}
+                                onBlur={handleBlur}
+                                onKeyPress={e => e.preventDefault()}
                                 onChange={handleChange}
                               />
                             );
@@ -608,15 +627,13 @@ class CreateNewAccount extends React.Component {
 
 CreateNewAccount.defaultProps = {
   initialValues: {
-    // username: '', // comment for now
+    username: '', // comment for now
     rawPwd: '',
-    // rawConFirmPwd: '',
+    rawConFirmPwd: '',
     firstName: '',
     lastName: '',
     gender: 0,
-    bday: moment(),
     position: '',
-    address: '',
     phone: '',
     teamId: '',
     email: '',

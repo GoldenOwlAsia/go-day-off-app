@@ -109,7 +109,7 @@ class Calendar extends React.Component {
 
     const events = letters.map(letter => {
       const backgroundColor = letter.fStatus === 1 ? '#ffe43a': letter.fStatus === 2 ? '#0eba25' : '#ff0000';
-      const textColor = 'white'
+      const textColor = letter.fStatus === 1 ? 'black' : 'white';
 
       return {
         id: letter.fId,

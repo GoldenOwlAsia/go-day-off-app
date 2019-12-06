@@ -148,24 +148,27 @@ Router.get('/', userMustBeAdmin, async (req, res) => {
         }
 
         // user's fullName
-        const users = await userModel.loadAll(['fFirstName', 'fLastName'], { where: { fId: fUserId } });
+        const users = await userModel.loadAll(['fFirstName', 'fLastName', 'fNickName'], { where: { fId: fUserId } });
         if (users.length) {
-          const { fFirstName, fLastName } = users[0].get({ plain: true });
+          const { fFirstName, fLastName, fNickName } = users[0].get({ plain: true });
           letter.fUserFullName = fFirstName + ' ' + fLastName;
+          letter.fUserNickName = fNickName;
         }
 
         // approver's fullName
-        const approvers = await userModel.loadAll(['fFirstName', 'fLastName'], { where: { fId: fApprover } });
+        const approvers = await userModel.loadAll(['fFirstName', 'fLastName', 'fNickName'], { where: { fId: fApprover } });
         if (approvers.length) {
-          const { fFirstName, fLastName } = approvers[0].get({ plain: true });
+          const { fFirstName, fLastName, fNickName } = approvers[0].get({ plain: true });
           letter.fApproverFullName = fFirstName + " " + fLastName;
+          letter.fApproverNickName = fNickName;
         }
         
         // substitute's fullName
-        const substitutes = await userModel.loadAll(['fFirstName', 'fLastName'], { where: { fId: fSubstituteId } });
+        const substitutes = await userModel.loadAll(['fFirstName', 'fLastName', 'fNickName'], { where: { fId: fSubstituteId } });
         if (substitutes.length) {
-          const { fFirstName, fLastName } = substitutes[0].get({ plain: true });
+          const { fFirstName, fLastName, fNickName } = substitutes[0].get({ plain: true });
           letter.fSubstituteFullName = fFirstName + " " + fLastName;
+          letter.fSubstituteNickName = fNickName;
         }
 
         leaveLetters.push(letter);
@@ -356,28 +359,31 @@ Router.get('/my-letters', async (req, res) => {
         const { fApprover, fUserId, fSubstituteId } = letter;
 
         // user's fullName
-        const users = await userModel.loadAll(["fFirstName", "fLastName"], {
+        const users = await userModel.loadAll(["fFirstName", "fLastName", "fNickName"], {
           where: { fId: fUserId }
         });
         if (users.length) {
-          const { fFirstName, fLastName } = users[0].get({ plain: true });
+          const { fFirstName, fLastName, fNickName } = users[0].get({ plain: true });
           letter.fUserFullName = fFirstName + " " + fLastName;
+          letter.fUserNickName = fNickName;
         }
         // approver's fullName
-        const approvers = await userModel.loadAll(["fFirstName", "fLastName"], {
+        const approvers = await userModel.loadAll(["fFirstName", "fLastName", "fNickName"], {
           where: { fId: fApprover }
         });
         if (approvers.length) {
-          const { fFirstName, fLastName } = approvers[0].get({ plain: true });
+          const { fFirstName, fLastName, fNickName } = approvers[0].get({ plain: true });
           letter.fApproverFullName = fFirstName + " " + fLastName;
+          letter.fApproverNickName = fNickName;
         }
         // substitute's fullName
         const substitutes = await userModel.loadAll(["fFirstName", "fLastName"], {
           where: { fId: fSubstituteId }
         });
         if (substitutes.length) {
-          const { fFirstName, fLastName } = substitutes[0].get({ plain: true });
+          const { fFirstName, fLastName, fNickName } = substitutes[0].get({ plain: true });
           letter.fSubstituteFullName = fFirstName + " " + fLastName;
+          letter.fSubstituteNickName = fNickName;
         }
 
         leaveLetters.push(letter);

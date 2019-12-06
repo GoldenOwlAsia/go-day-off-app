@@ -63,6 +63,7 @@ Router.get('/profile', async (req, res) => {
       'fEmail',
       'fFirstName',
       'fLastName',
+      'fNickName',
       'fPhone',
       'fPosition',
       'fTeamId',
@@ -158,12 +159,10 @@ Router.patch("/profile", bodyMustNotEmpty, userMustBeAdmin, async (req, res) => 
         fYear,
       }
     });
-    if (affectedDayOff[0] !== 1) throw { msg: 'DAY-OFF_NOT_FOUND' };
 
     const affectedUser = await userModel.modify(entity, {
       where: { fId: id }
     });
-    if (affectedUser[0] !== 1) throw { msg: 'USER_NOT_FOUND' };
 
     handleSuccess(res, { user: entity });
   } catch (err) {
@@ -171,6 +170,7 @@ Router.patch("/profile", bodyMustNotEmpty, userMustBeAdmin, async (req, res) => 
   }
 });
 
+// get approver
 Router.get('/approver', async (req, res) => {
   try {
     // get admin user type id
@@ -193,6 +193,7 @@ Router.get('/approver', async (req, res) => {
   }
 });
 
+// get team leader
 Router.get('/team-leader', async (req, res) => {
   try {
     const { userId } = req.token_payload;
@@ -240,6 +241,7 @@ Router.get('/team-leader', async (req, res) => {
   }
 });
 
+// get subtitutes
 Router.get('/substitutes', async (req, res) => {
   try {
     console.log(`userController -> path '/subsitutes':`);
@@ -279,7 +281,7 @@ Router.get('/substitutes', async (req, res) => {
   }
 });
 
-Router.get("/", userMustBeAdmin, async (req, res) => {
+Router.get('/', userMustBeAdmin, async (req, res) => {
   try {
     let { page = DEFAULT_PAGE_ORDER, size = DEFAULT_PAGE_SIZE } = req.query;
     if(isNaN(page) || page < 1) page = DEFAULT_PAGE_ORDER;
@@ -287,7 +289,7 @@ Router.get("/", userMustBeAdmin, async (req, res) => {
     if(+size === 0) size = Number.MAX_SAFE_INTEGER;
 
     const { rawUsers, count } = await userModel.countAll(
-      ['fId', 'fFirstName', 'fLastName', 'fTeamId', 'fEmail'],
+      ['fId', 'fFirstName', 'fLastName', 'fNickName', 'fTeamId', 'fEmail'],
       {},
       { limit: +size },
       { offset: (page - 1) * size },

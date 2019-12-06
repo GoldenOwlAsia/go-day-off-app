@@ -79,8 +79,8 @@ class UsersManagement extends React.Component {
       columns: ['Name', /*'Status',*/ 'Team', 'Email', 'Actions'],
       title: <Typography component="span" variant="h4" className={classes.title}>All users</Typography>,
       data: Array.isArray(users) ? (
-        users.map(({ fId, fFirstName, fLastName, fEmail, fTeamName, fAvailable }) => [
-            `${fLastName} ${fFirstName}`,
+        users.map(({ fId, fFirstName, fLastName, fNickName, fEmail, fTeamName, fAvailable }) => [
+            `${fLastName} ${fFirstName} ${fNickName ? `(${fNickName})` : ''}`,
             fTeamName,
             fEmail,
             <Link

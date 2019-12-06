@@ -38,8 +38,7 @@ import {
 } from '../../apiCalls/userAPIs';
 import { getDayOffSetting } from '../../apiCalls/settingAPIs';
 import { createLeaveLetter } from '../../apiCalls/leaveLetterAPI';
-import { getDayOff } from '../../apiCalls/userAPIs';
-import { getProfile } from '../../apiCalls/userAPIs';
+import { getDayOff, getProfile } from '../../apiCalls/userAPIs';
 
 // Notification redux
 import {
@@ -79,6 +78,7 @@ class AbsenceLetterWithFormik extends React.Component {
     isRequestCreated: false,
     lastLetterId: undefined,
     userInfo: undefined,
+    approverEmail: '',
   };
 
   switchButtonCtrl = enable => {
@@ -173,31 +173,17 @@ class AbsenceLetterWithFormik extends React.Component {
         this.switchButtonCtrl(false);
       });
 
-    //Load usedDayOff
+    //Load dayOffRemaining
     getDayOff(this.cancelSource.token, getUserId()).then(res => {
-      let usedDayOff = '-';
+      let dayOffRemaining = '-';
       if (res.data.success) {
-        usedDayOff = res.data.fYearUsed;
+        dayOffRemaining = res.data.fYearRemaining;
       }
 
-      this.__isMounted && this.setState({ usedDayOff });
+      this.__isMounted && this.setState({ dayOffRemaining });
     }).catch(err => {
       if (err.message !== USER_LEFT_PAGE) 
       (this.__isMounted && this.props.handleShowNotif) && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Used Day-off'!`);
-    });
-
-    getDayOffSetting(this.cancelSource.token)
-    .then(res => {
-        let dayOffSetting = '-';
-        if (res.data.success) {
-          const { settings } = res.data;
-          dayOffSetting = settings[0].fValue;
-        }
-        this.__isMounted && this.setState({ dayOffSetting });
-      })
-    .catch(err => {
-      if (err.message !== USER_LEFT_PAGE) 
-      (this.__isMounted && this.props.handleShowNotif) && this.props.handleShowNotif(NOTIF_ERROR, `Couldn't load 'Day-off Setting'!`);
     });
   }
 
@@ -206,8 +192,9 @@ class AbsenceLetterWithFormik extends React.Component {
     this.cancelSource.cancel(`User has suddenly left the page!`);
   }
 
-  sendRequestEmail = (user, letter) => {
+  sendRequestEmail = (user, letter, to_email) => {
     const fullName = `${user.fFirstName} ${user.fLastName}`;
+    const nickName = `${user.fNickName} `;
     const startDate = letter.startDate.toString().substring(0, 10);
     const startSession = letter.fromOpt === 'afternoon' ? '(afternoon)' : '';
     const endDate = letter.endDate.toString().substring(0, 10);
@@ -215,8 +202,9 @@ class AbsenceLetterWithFormik extends React.Component {
     const leaveReason = letter.reason;
 
     const emailParams = {
-      to_email: 'phamtrongan@outlook.com ',
+      to_email: 'celine@goldenowl.asia',
       fullName,
+      nickName,
       startDate,
       startSession,
       endDate,
@@ -233,7 +221,7 @@ class AbsenceLetterWithFormik extends React.Component {
       templateList: { leaveTypesList, informToList, approverList, substitutesList },
       otherReasonSelected
     } = this.state;
-    const { usedDayOff, dayOffSetting } = this.state;
+    const { dayOffRemaining } = this.state;
 
     return (
       <DashContainer>
@@ -247,16 +235,24 @@ class AbsenceLetterWithFormik extends React.Component {
               onReset={(values, actions) => {
                 this.handleChangeReason();
               }}
-              onSubmit={(values, actions) => {
+              onSubmit={async (values, actions) => {
                 let submitValues = JSON.parse(JSON.stringify(values));
-                const { userInfo } = this.state;
+                const { userInfo, approverEmail } = this.state;
                 const { sendRequestEmail } = this;
 
                 if (compareDatesWithoutTime(values.startDate, values.endDate) === 0) {
                   submitValues.toOpt = submitValues.fromOpt;
                 }
+                
+                // let response = await getProfile(submitValues.approver);
+                // let {
+                //   status: statusApprover,
+                //   data: { success: successApprover, user: approverInfo }
+                // } = response;
+                // if(statusApprover !== 200 || successApprover !== true || !approverInfo) return;
+                // this.__isMounted && this.setState({ approverEmail: approverInfo.fEmail });
 
-                Axios.all([createLeaveLetter(submitValues), sendRequestEmail(userInfo, submitValues)]) 
+                Axios.all([createLeaveLetter(submitValues), sendRequestEmail(userInfo, submitValues, approverEmail)]) 
                   .then(Axios.spread((cLLRes, sRERes) => {
                     const { fId } = cLLRes.data.leaveLetter.leaveLetter;
                     this.__isMounted && this.setState({
@@ -270,7 +266,6 @@ class AbsenceLetterWithFormik extends React.Component {
                     });
                   }))
                   .catch(err => {
-                  console.log("TCL: render -> err", err)
                     handleShowNotif(NOTIF_ERROR, `Can't create Leave request! Try later`);
                     actions.setSubmitting(false);
                   });
@@ -366,8 +361,8 @@ class AbsenceLetterWithFormik extends React.Component {
                                   values.fromOpt,
                                   values.toOpt
                                 );
-                                const remainAnnualDayOff = !isNaN(usedDayOff) && !isNaN(dayOffSetting) 
-                                      ? ( dayOffSetting - usedDayOff - calculatedDayOff > 0 ? ` - [${dayOffSetting - usedDayOff - calculatedDayOff} day(s) left]` : ' - [0 day left]') 
+                                const remainAnnualDayOff = !isNaN(dayOffRemaining) 
+                                      ? ( dayOffRemaining - calculatedDayOff > 0 ? ` - [${dayOffRemaining - calculatedDayOff} day(s) left]` : ' - [0 day left]') 
                                       : '';
                                 //do something
                                 return (
@@ -676,8 +671,8 @@ class AbsenceLetterWithFormik extends React.Component {
 AbsenceLetterWithFormik.defaultProps = {
   initialValues: {
     leaveType: 1,
-    startDate: moment().add(1, 'days'),
-    endDate: moment().add(1, 'days'),
+    startDate: moment(),
+    endDate: moment(),
     approver: '',
     informTo: [], //must be an array
     substituteId: '', //Temporarily mockup
